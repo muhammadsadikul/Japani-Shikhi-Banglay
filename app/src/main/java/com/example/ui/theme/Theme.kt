@@ -7,48 +7,48 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val LightColorScheme = lightColorScheme(
+val LightColorScheme = lightColorScheme(
     primary = JapanRed,
     onPrimary = Color.White,
-    primaryContainer = JapanRedLight,
+    primaryContainer = RawJapanRedLight,
     onPrimaryContainer = JapanRedDark,
-    secondary = Slate700,
+    secondary = RawSlate700,
     onSecondary = Color.White,
-    secondaryContainer = SurfaceSubtle,
-    onSecondaryContainer = Slate900,
+    secondaryContainer = RawSurfaceSubtle,
+    onSecondaryContainer = RawSlate900,
     tertiary = Amber600,
     onTertiary = Color.White,
-    tertiaryContainer = Amber50,
+    tertiaryContainer = RawAmber50,
     onTertiaryContainer = Amber600,
-    background = LightBg,
-    onBackground = Slate900,
-    surface = CardBg,
-    onSurface = Slate900,
-    surfaceVariant = SurfaceSubtle,
-    onSurfaceVariant = Slate700,
-    outline = BorderSubtle
+    background = RawLightBg,
+    onBackground = RawSlate900,
+    surface = RawCardBg,
+    onSurface = RawSlate900,
+    surfaceVariant = RawSurfaceSubtle,
+    onSurfaceVariant = RawSlate700,
+    outline = RawBorderSubtle
 )
 
-private val DarkColorScheme = darkColorScheme(
+val DarkColorScheme = darkColorScheme(
     primary = JapanRed,
     onPrimary = Color.White,
-    primaryContainer = JapanRedDark,
-    onPrimaryContainer = JapanRedLight,
-    secondary = Slate400,
-    onSecondary = Slate900,
-    secondaryContainer = Slate700,
+    primaryContainer = RawDarkRedContainer,
+    onPrimaryContainer = Color(0xFFFFD1D9),
+    secondary = RawDarkTextMuted,
+    onSecondary = RawDarkBg,
+    secondaryContainer = RawDarkSurface,
     onSecondaryContainer = Color.White,
     tertiary = Amber600,
     onTertiary = Color.White,
-    tertiaryContainer = Amber50,
-    onTertiaryContainer = Amber600,
-    background = Color(0xFF0F172A),
-    onBackground = Color(0xFFF8FAFC),
-    surface = Color(0xFF1E293B),
-    onSurface = Color(0xFFF8FAFC),
-    surfaceVariant = Color(0xFF334155),
-    onSurfaceVariant = Color(0xFFCBD5E1),
-    outline = Color(0xFF475569)
+    tertiaryContainer = Color(0xFF451A03),
+    onTertiaryContainer = RawAmber50,
+    background = RawDarkBg,
+    onBackground = RawDarkTextPrimary,
+    surface = RawDarkSurface,
+    onSurface = RawDarkTextPrimary,
+    surfaceVariant = RawDarkSurfaceSubtle,
+    onSurfaceVariant = RawDarkTextSecondary,
+    outline = RawDarkBorder
 )
 
 @Composable

@@ -12,9 +12,11 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,10 +28,12 @@ import androidx.compose.ui.Modifier
 import com.example.data.SettingsManager
 import com.example.ui.components.AppBottomNavBar
 import com.example.ui.components.AppScreen
+import com.example.ui.screens.AiTutorScreen
 import com.example.ui.screens.FlashcardScreen
 import com.example.ui.screens.GrammarScreen
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.KanjiScreen
+import com.example.ui.screens.ProfileScreen
 import com.example.ui.screens.QuizScreen
 import com.example.ui.screens.SettingsScreen
 import com.example.ui.screens.SplashScreen
@@ -53,10 +57,15 @@ class MainActivity : ComponentActivity() {
             val useDarkTheme = isDarkModePref ?: isSystemInDarkTheme()
 
             JapaneseBanglaTheme(darkTheme = useDarkTheme) {
-                MainAppHost(
-                    settingsManager = settingsManager,
-                    onSpeakJapanese = { text -> ttsManager.speakJapanese(text) }
-                )
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    MainAppHost(
+                        settingsManager = settingsManager,
+                        onSpeakJapanese = { text -> ttsManager.speakJapanese(text) }
+                    )
+                }
             }
         }
     }
@@ -113,6 +122,7 @@ fun MainApp(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             if (currentScreen != AppScreen.SETTINGS) {
                 AppBottomNavBar(
@@ -142,19 +152,29 @@ fun MainApp(
                     onSpeakJapanese = onSpeakJapanese,
                     onReportError = onReportError
                 )
+                AppScreen.QUIZ -> QuizScreen(
+                    onSpeakJapanese = onSpeakJapanese
+                )
+                AppScreen.AI_TUTOR -> AiTutorScreen(
+                    onSpeakJapanese = onSpeakJapanese
+                )
+                AppScreen.PROFILE -> ProfileScreen(
+                    onNavigate = { target -> currentScreen = target },
+                    onOpenSettings = { currentScreen = AppScreen.SETTINGS },
+                    snackbarHostState = snackbarHostState
+                )
                 AppScreen.FLASHCARD -> FlashcardScreen(
                     showEnglishMeaning = showEnglishMeaning,
                     onSpeakJapanese = onSpeakJapanese,
                     onReportError = onReportError
                 )
-                AppScreen.QUIZ -> QuizScreen(
-                    onSpeakJapanese = onSpeakJapanese
-                )
                 AppScreen.KANJI -> KanjiScreen(
+                    showEnglishMeaning = showEnglishMeaning,
                     onSpeakJapanese = onSpeakJapanese,
                     snackbarHostState = snackbarHostState
                 )
                 AppScreen.GRAMMAR -> GrammarScreen(
+                    showEnglishMeaning = showEnglishMeaning,
                     onSpeakJapanese = onSpeakJapanese,
                     snackbarHostState = snackbarHostState
                 )

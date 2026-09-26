@@ -4,15 +4,19 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material.icons.filled.Spellcheck
 import androidx.compose.material.icons.filled.Style
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.MenuBook
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Quiz
 import androidx.compose.material.icons.outlined.Spellcheck
 import androidx.compose.material.icons.outlined.Style
@@ -31,8 +35,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.theme.JapanRed
-import com.example.ui.theme.JapanRedLight
-import com.example.ui.theme.Slate500
 
 enum class AppScreen(
     val titleBengali: String,
@@ -42,11 +44,15 @@ enum class AppScreen(
 ) {
     HOME("হোম", Icons.Filled.Home, Icons.Outlined.Home, "nav_tab_home"),
     VOCABULARY("শব্দ", Icons.Filled.MenuBook, Icons.Outlined.MenuBook, "nav_tab_vocab"),
-    FLASHCARD("কার্ড", Icons.Filled.Style, Icons.Outlined.Style, "nav_tab_flashcard"),
     QUIZ("কুইজ", Icons.Filled.Quiz, Icons.Outlined.Quiz, "nav_tab_quiz"),
+    AI_TUTOR("AI", Icons.Filled.AutoAwesome, Icons.Outlined.AutoAwesome, "nav_tab_ai"),
+    PROFILE("প্রোফাইল", Icons.Filled.Person, Icons.Outlined.Person, "nav_tab_profile"),
+
+    // Sub-screens navigated from Home & Profile
+    FLASHCARD("কার্ড", Icons.Filled.Style, Icons.Outlined.Style, "nav_tab_flashcard"),
     KANJI("কাঞ্জি", Icons.Filled.Spellcheck, Icons.Outlined.Spellcheck, "nav_tab_kanji"),
     GRAMMAR("গ্রামার", Icons.Filled.AutoStories, Icons.Outlined.AutoStories, "nav_tab_grammar"),
-    SETTINGS("সেটিংস", Icons.Filled.Home, Icons.Outlined.Home, "nav_tab_settings") // Used internally for settings navigation
+    SETTINGS("সেটিংস", Icons.Filled.Home, Icons.Outlined.Home, "nav_tab_settings")
 }
 
 @Composable
@@ -55,13 +61,13 @@ fun AppBottomNavBar(
     onTabSelected: (AppScreen) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // 5 primary bottom navigation items
     val navItems = listOf(
         AppScreen.HOME,
         AppScreen.VOCABULARY,
-        AppScreen.FLASHCARD,
         AppScreen.QUIZ,
-        AppScreen.KANJI,
-        AppScreen.GRAMMAR
+        AppScreen.AI_TUTOR,
+        AppScreen.PROFILE
     )
 
     NavigationBar(
@@ -94,9 +100,9 @@ fun AppBottomNavBar(
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = JapanRed,
                     selectedTextColor = JapanRed,
-                    indicatorColor = JapanRedLight,
-                    unselectedIconColor = Slate500,
-                    unselectedTextColor = Slate500
+                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                 ),
                 modifier = Modifier.testTag(screen.testTag)
             )

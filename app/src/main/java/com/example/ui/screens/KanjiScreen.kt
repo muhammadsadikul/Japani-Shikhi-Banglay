@@ -79,6 +79,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun KanjiScreen(
+    showEnglishMeaning: Boolean = true,
     onSpeakJapanese: (String) -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
@@ -89,6 +90,7 @@ fun KanjiScreen(
     if (selectedKanji != null) {
         KanjiDetailView(
             kanjiItem = selectedKanji!!,
+            showEnglishMeaning = showEnglishMeaning,
             onBack = { selectedKanji = null },
             onSpeakJapanese = onSpeakJapanese,
             onReportError = { message ->
@@ -236,6 +238,7 @@ fun KanjiCard(
 @Composable
 fun KanjiDetailView(
     kanjiItem: KanjiItem,
+    showEnglishMeaning: Boolean = true,
     onBack: () -> Unit,
     onSpeakJapanese: (String) -> Unit,
     onReportError: (String) -> Unit
@@ -308,11 +311,13 @@ fun KanjiDetailView(
                         fontWeight = FontWeight.ExtraBold,
                         color = JapanRed
                     )
-                    Text(
-                        text = kanjiItem.meaningEnglish,
-                        fontSize = 14.sp,
-                        color = Slate500
-                    )
+                    if (showEnglishMeaning) {
+                        Text(
+                            text = kanjiItem.meaningEnglish,
+                            fontSize = 14.sp,
+                            color = Slate500
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -474,13 +479,16 @@ fun KanjiDetailView(
             // Interactive Drawing Canvas with Genkouyoushi Calligraphy Grid
             Card(
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CardBg),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(240.dp)
                     .border(2.dp, JapanRedBorder, RoundedCornerShape(16.dp))
                     .testTag("kanji_drawing_canvas")
             ) {
+                val inkColor = Slate900
+                val gridBorderColor = JapanRedBorder.copy(alpha = 0.5f)
+                val gridLineColor = JapanRedBorder.copy(alpha = 0.4f)
                 Box(modifier = Modifier.fillMaxSize()) {
                     // Calligraphy Grid & Watermark
                     Canvas(modifier = Modifier.fillMaxSize()) {
@@ -488,17 +496,17 @@ fun KanjiDetailView(
                         val h = size.height
 
                         // Outer border
-                        drawRect(color = Color(0xFFFDE8E8), style = Stroke(width = 2.dp.toPx()))
+                        drawRect(color = gridBorderColor, style = Stroke(width = 2.dp.toPx()))
 
                         // Cross guidelines (dashed horizontal and vertical)
                         drawLine(
-                            color = Color(0xFFFCA5A5),
+                            color = gridLineColor,
                             start = Offset(w * 0.5f, 0f),
                             end = Offset(w * 0.5f, h),
                             strokeWidth = 1.dp.toPx()
                         )
                         drawLine(
-                            color = Color(0xFFFCA5A5),
+                            color = gridLineColor,
                             start = Offset(0f, h * 0.5f),
                             end = Offset(w, h * 0.5f),
                             strokeWidth = 1.dp.toPx()
@@ -513,7 +521,7 @@ fun KanjiDetailView(
                         Text(
                             text = kanjiItem.kanji,
                             fontSize = 110.sp,
-                            color = Color(0xFFFEE2E2).copy(alpha = 0.65f),
+                            color = JapanRed.copy(alpha = 0.18f),
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -558,7 +566,7 @@ fun KanjiDetailView(
                                         lineTo(points[i].x, points[i].y)
                                     }
                                 }
-                                drawPath(path, color = Color(0xFF0F172A), style = strokeStyle)
+                                drawPath(path, color = inkColor, style = strokeStyle)
                             }
                         }
 

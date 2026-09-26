@@ -64,6 +64,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun GrammarScreen(
+    showEnglishMeaning: Boolean = true,
     onSpeakJapanese: (String) -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
@@ -74,6 +75,7 @@ fun GrammarScreen(
     if (selectedGrammar != null) {
         GrammarDetailView(
             grammarItem = selectedGrammar!!,
+            showEnglishMeaning = showEnglishMeaning,
             onBack = { selectedGrammar = null },
             onSpeakJapanese = onSpeakJapanese,
             onReportError = { message ->
@@ -221,6 +223,7 @@ fun GrammarCard(
 @Composable
 fun GrammarDetailView(
     grammarItem: GrammarItem,
+    showEnglishMeaning: Boolean = true,
     onBack: () -> Unit,
     onSpeakJapanese: (String) -> Unit,
     onReportError: (String) -> Unit
@@ -378,11 +381,13 @@ fun GrammarDetailView(
                         fontWeight = FontWeight.Bold,
                         color = Slate900
                     )
-                    Text(
-                        text = grammarItem.exampleEnglish,
-                        fontSize = 13.sp,
-                        color = Slate500
-                    )
+                    if (showEnglishMeaning) {
+                        Text(
+                            text = grammarItem.exampleEnglish,
+                            fontSize = 13.sp,
+                            color = Slate500
+                        )
+                    }
                 }
             }
 
