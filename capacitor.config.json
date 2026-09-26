@@ -1,6 +1,6 @@
 {
-  "appId": "com.aistudio.japanesebangla.jpbd",
-  "appName": "Japanese for Bangla",
+  "appId": "com.sadikul.japanishikhibanglay",
+  "appName": "জাপানি শিখি বাংলায়",
   "webDir": "dist",
   "bundledWebRuntime": false,
   "server": {
