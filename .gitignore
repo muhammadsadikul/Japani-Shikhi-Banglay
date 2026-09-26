@@ -39,6 +39,7 @@ captures/
 # Keystore files and signing secrets (never commit upload or release keys)
 *.jks
 *.keystore
+debug.keystore
 *.key
 *.p12
 debug.keystore.base64
