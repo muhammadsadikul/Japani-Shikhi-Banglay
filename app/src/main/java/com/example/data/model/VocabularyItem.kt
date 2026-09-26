@@ -8,5 +8,9 @@ data class VocabularyItem(
     val bengali: String,
     val english: String,
     val category: String,
-    val level: String = "N5"
+    val level: String = "N5",
+    val exampleJapanese: String = "",
+    val exampleReading: String = "",
+    val exampleBengali: String = "",
+    val exampleEnglish: String = ""
 )

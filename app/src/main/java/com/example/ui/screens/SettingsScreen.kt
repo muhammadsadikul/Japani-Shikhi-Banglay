@@ -2,6 +2,7 @@ package com.example.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,10 +20,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.ButtonDefaults
@@ -39,7 +42,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +54,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.LanguageRepository
 import com.example.data.SettingsManager
 import com.example.ui.theme.BorderSubtle
 import com.example.ui.theme.CardBg
@@ -76,6 +83,26 @@ fun SettingsScreen(
     val isDarkMode by settingsManager.isDarkMode.collectAsState()
     val showEnglishMeaning by settingsManager.showEnglishMeaning.collectAsState()
     val smartNotifications by settingsManager.smartNotifications.collectAsState()
+    val appLanguage by settingsManager.appLanguage.collectAsState()
+
+    var showLanguageSelector by remember { mutableStateOf(false) }
+
+    if (showLanguageSelector) {
+        LanguageSelectionScreen(
+            initialLanguage = appLanguage,
+            onLanguageSelected = { newLang ->
+                settingsManager.setAppLanguage(newLang)
+                showLanguageSelector = false
+                coroutineScope.launch {
+                    val langObj = LanguageRepository.getLanguageByCode(newLang)
+                    snackbarHostState.showSnackbar("ভাষা পরিবর্তিত: ${langObj.displayName}")
+                }
+            },
+            onBack = { showLanguageSelector = false },
+            modifier = modifier
+        )
+        return
+    }
 
     val downloadLevels = listOf(
         Pair("JLPT N5 প্যাকেজ", true),
@@ -138,6 +165,82 @@ fun SettingsScreen(
                     .border(1.dp, BorderSubtle, RoundedCornerShape(16.dp))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
+                    // App Language Selector
+                    val currentLangObj = LanguageRepository.getLanguageByCode(appLanguage)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { showLanguageSelector = true }
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(CircleShape)
+                                    .background(JapanRedLight),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Language,
+                                    contentDescription = null,
+                                    tint = JapanRed,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = "অ্যাপের ভাষা (App Language)",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Slate900
+                                )
+                                Text(
+                                    text = "${currentLangObj.flag} ${currentLangObj.displayName}",
+                                    fontSize = 13.sp,
+                                    color = JapanRed,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = JapanRedLight,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, JapanRedBorder)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "পরিবর্তন",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = JapanRed
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = null,
+                                    tint = JapanRed,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderSubtle))
+                    Spacer(modifier = Modifier.height(14.dp))
+
                     // Dark Mode Toggle
                     Row(
                         modifier = Modifier.fillMaxWidth(),

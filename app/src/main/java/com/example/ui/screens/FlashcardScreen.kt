@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,13 +18,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Flip
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.outlined.CheckCircle
@@ -59,6 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.VocabularyRepository
 import com.example.data.model.VocabularyItem
+import com.example.ui.components.PronunciationPracticeDialog
 import com.example.ui.components.ReportErrorButton
 import com.example.ui.theme.BorderSubtle
 import com.example.ui.theme.CardBg
@@ -85,7 +90,20 @@ fun FlashcardScreen(
     var isFlipped by remember { mutableStateOf(false) }
     val masteredIds = remember { mutableStateListOf<Int>() }
 
+    // State for Pronunciation Practice: Triple(japanese, reading, meaning)
+    var practiceTarget by remember { mutableStateOf<Triple<String, String, String>?>(null) }
+
     val currentWord = words.getOrNull(currentIndex) ?: return
+
+    if (practiceTarget != null) {
+        PronunciationPracticeDialog(
+            targetJapanese = practiceTarget!!.first,
+            targetReading = practiceTarget!!.second,
+            targetMeaning = practiceTarget!!.third,
+            onSpeakNative = onSpeakJapanese,
+            onDismiss = { practiceTarget = null }
+        )
+    }
 
     fun goNext() {
         isFlipped = false
@@ -111,13 +129,10 @@ fun FlashcardScreen(
         currentIndex = 0
     }
 
-    val isMastered = masteredIds.contains(currentWord.id)
-
-    // Smooth 3D Flip animation
     val rotation by animateFloatAsState(
         targetValue = if (isFlipped) 180f else 0f,
         animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing),
-        label = "card_rotation"
+        label = "card_flip_rotation"
     )
 
     val density = LocalDensity.current.density
@@ -127,66 +142,75 @@ fun FlashcardScreen(
         modifier = modifier
             .fillMaxSize()
             .background(LightBg)
-            .padding(horizontal = 20.dp, vertical = 12.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
             .testTag("flashcard_screen"),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Top Section: Progress & Bengali Counter ("১ / ৫০")
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        // Top Header
+        Column(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Shuffle Button
-                IconButton(
-                    onClick = { shuffleCards() },
-                    modifier = Modifier.testTag("shuffle_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Shuffle,
-                        contentDescription = "এলোমেলো করুন",
-                        tint = Slate700
+                Column {
+                    Text(
+                        text = "ফ্ল্যাশকার্ড অনুশীলন",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Slate900
+                    )
+                    Text(
+                        text = "কার্ড ${BengaliUtils.toBengaliDigits(currentIndex + 1)} / ${BengaliUtils.toBengaliDigits(words.size)}",
+                        fontSize = 13.sp,
+                        color = Slate500
                     )
                 }
 
-                // Bengali Counter: "১ / ৫০"
-                Text(
-                    text = BengaliUtils.formatCounter(currentIndex + 1, words.size),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Slate900,
-                    modifier = Modifier.testTag("flashcard_counter")
-                )
-
-                // Mastered / Learned toggle button
-                IconButton(
-                    onClick = {
-                        if (isMastered) {
-                            masteredIds.remove(currentWord.id)
-                        } else {
-                            masteredIds.add(currentWord.id)
-                        }
-                    },
-                    modifier = Modifier.testTag("mastered_toggle_button")
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = if (isMastered) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
-                        contentDescription = if (isMastered) "মুখস্থ হয়েছে" else "মুখস্থ হয়নি",
-                        tint = if (isMastered) Emerald600 else Slate400
-                    )
+                    IconButton(
+                        onClick = { shuffleCards() },
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .background(CardBg)
+                            .border(1.dp, BorderSubtle, CircleShape)
+                            .testTag("shuffle_cards_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Shuffle,
+                            contentDescription = "শাফল করুন",
+                            tint = Slate700,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = JapanRedLight,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, JapanRedBorder)
+                    ) {
+                        Text(
+                            text = "N5 শব্দ",
+                            color = JapanRed,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Progress Indicator
+            // Progress Bar
+            val progress = (currentIndex + 1).toFloat() / words.size.toFloat()
             LinearProgressIndicator(
-                progress = { (currentIndex + 1).toFloat() / words.size.toFloat() },
+                progress = { progress },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(6.dp)
@@ -196,13 +220,13 @@ fun FlashcardScreen(
             )
         }
 
-        // Center Section: Centered 3D Flippable Flashcard with Swipe Detection
+        // 3D Flippable Flashcard with Horizontal Swipe Gesture
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .padding(vertical = 12.dp)
-                .pointerInput(Unit) {
+                .padding(vertical = 10.dp)
+                .pointerInput(currentIndex) {
                     detectHorizontalDragGestures(
                         onDragEnd = {
                             if (dragAccumulator < -80f) {
@@ -229,7 +253,7 @@ fun FlashcardScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(350.dp)
+                    .height(390.dp)
                     .graphicsLayer {
                         rotationY = rotation
                         cameraDistance = 12f * density
@@ -242,13 +266,20 @@ fun FlashcardScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .graphicsLayer { rotationY = 180f }
-                            .padding(20.dp),
+                            .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         FlashcardBack(
                             word = currentWord,
                             showEnglishMeaning = showEnglishMeaning,
                             onSpeak = { onSpeakJapanese(currentWord.japanese) },
+                            onPracticeWord = {
+                                practiceTarget = Triple(currentWord.japanese, currentWord.furigana, currentWord.bengali)
+                            },
+                            onSpeakExample = { onSpeakJapanese(currentWord.exampleJapanese) },
+                            onPracticeExample = {
+                                practiceTarget = Triple(currentWord.exampleJapanese, currentWord.exampleReading, currentWord.exampleBengali)
+                            },
                             onReportError = onReportError
                         )
                     }
@@ -259,13 +290,16 @@ fun FlashcardScreen(
                             .padding(20.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        FlashcardFront(word = currentWord)
+                        FlashcardFront(
+                            word = currentWord,
+                            category = currentWord.category
+                        )
                     }
                 }
             }
         }
 
-        // Bottom Controls: Flip button, Previous, Next
+        // Action Controls (Flip button, Navigation, Mastery toggle)
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -277,7 +311,7 @@ fun FlashcardScreen(
                 border = androidx.compose.foundation.BorderStroke(1.dp, JapanRedBorder),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
+                    .height(46.dp)
                     .testTag("flip_action_button")
             ) {
                 Icon(
@@ -287,7 +321,7 @@ fun FlashcardScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (isFlipped) "জাপানি শব্দ দেখুন" else "অর্থ ও উচ্চারণ দেখুন (উল্টান)",
+                    text = if (isFlipped) "জাপানি শব্দ দেখুন" else "অর্থ ও উদাহরণ দেখুন (উল্টান)",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -305,22 +339,22 @@ fun FlashcardScreen(
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier
                         .weight(1f)
-                        .height(50.dp)
+                        .height(48.dp)
                         .testTag("prev_card_button"),
                     border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle)
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "পূর্ববর্তী শব্দ",
+                        contentDescription = "আগের শব্দ",
                         tint = Slate700,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "পূর্ববর্তী",
-                        fontSize = 14.sp,
+                        text = "আগের শব্দ",
+                        color = Slate900,
                         fontWeight = FontWeight.SemiBold,
-                        color = Slate700
+                        fontSize = 13.sp
                     )
                 }
 
@@ -330,48 +364,81 @@ fun FlashcardScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = JapanRed),
                     modifier = Modifier
                         .weight(1f)
-                        .height(50.dp)
+                        .height(48.dp)
                         .testTag("next_card_button")
                 ) {
                     Text(
-                        text = "পরবর্তী",
-                        fontSize = 14.sp,
+                        text = "পরের শব্দ",
+                        color = Color.White,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        fontSize = 13.sp
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = "পরবর্তী শব্দ",
+                        contentDescription = "পরের শব্দ",
                         tint = Color.White,
                         modifier = Modifier.size(18.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Learned/Mastered Toggle
+            val isMastered = masteredIds.contains(currentWord.id)
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .clickable {
+                        if (isMastered) {
+                            masteredIds.remove(currentWord.id)
+                        } else {
+                            masteredIds.add(currentWord.id)
+                        }
+                    }
+                    .padding(horizontal = 14.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (isMastered) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
+                    contentDescription = null,
+                    tint = if (isMastered) Emerald600 else Slate400,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = if (isMastered) "শেখা সম্পন্ন হয়েছে ✓" else "শেখা হিসেবে মার্ক করুন",
+                    fontSize = 12.sp,
+                    color = if (isMastered) Emerald600 else Slate500,
+                    fontWeight = if (isMastered) FontWeight.Bold else FontWeight.Normal
+                )
+            }
         }
     }
 }
 
 @Composable
-fun FlashcardFront(word: VocabularyItem) {
+fun FlashcardFront(
+    word: VocabularyItem,
+    category: String
+) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Surface(
-            shape = RoundedCornerShape(8.dp),
+            shape = RoundedCornerShape(10.dp),
             color = JapanRedLight,
             border = androidx.compose.foundation.BorderStroke(1.dp, JapanRedBorder)
         ) {
             Text(
-                text = "${word.level} • ${word.category}",
+                text = category,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = JapanRed,
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
             )
         }
 
@@ -395,7 +462,7 @@ fun FlashcardFront(word: VocabularyItem) {
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = "অর্থ দেখতে স্পর্শ করুন",
+                text = "অর্থ ও বাক্য দেখতে স্পর্শ করুন",
                 fontSize = 13.sp,
                 color = Slate400,
                 fontWeight = FontWeight.Medium
@@ -409,14 +476,21 @@ fun FlashcardBack(
     word: VocabularyItem,
     showEnglishMeaning: Boolean,
     onSpeak: () -> Unit,
+    onPracticeWord: () -> Unit,
+    onSpeakExample: () -> Unit,
+    onPracticeExample: () -> Unit,
     onReportError: (String) -> Unit
 ) {
+    val scrollState = rememberScrollState()
+
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Top Row: Furigana and Audio Speaker
+        // Top Row: Furigana and Audio Speaker + Mic Icons
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -424,60 +498,158 @@ fun FlashcardBack(
         ) {
             Text(
                 text = word.furigana,
-                fontSize = 18.sp,
+                fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
                 color = JapanRed
             )
 
-            IconButton(
-                onClick = onSpeak,
-                modifier = Modifier
-                    .size(38.dp)
-                    .clip(CircleShape)
-                    .background(JapanRedLight)
-                    .testTag("flashcard_speak_button")
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.VolumeUp,
-                    contentDescription = "উচ্চারণ শুনুন",
-                    tint = JapanRed,
-                    modifier = Modifier.size(20.dp)
-                )
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                // Speaker Button
+                IconButton(
+                    onClick = onSpeak,
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(JapanRedLight)
+                        .testTag("flashcard_speak_button")
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.VolumeUp,
+                        contentDescription = "উচ্চারণ শুনুন",
+                        tint = JapanRed,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+
+                // Microphone Button
+                IconButton(
+                    onClick = onPracticeWord,
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(JapanRedLight)
+                        .testTag("flashcard_mic_button")
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Mic,
+                        contentDescription = "উচ্চারণ পরীক্ষা",
+                        tint = JapanRed,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             }
         }
+
+        Spacer(modifier = Modifier.height(6.dp))
 
         // Middle Section: Romaji & Bengali Meaning (Bold)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = 8.dp)
+            modifier = Modifier.padding(horizontal = 4.dp)
         ) {
             Text(
                 text = word.romaji,
-                fontSize = 15.sp,
+                fontSize = 14.sp,
                 color = Slate500,
                 fontWeight = FontWeight.Medium
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = word.bengali,
-                fontSize = 26.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Slate900,
                 textAlign = TextAlign.Center
             )
 
             if (showEnglishMeaning) {
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = word.english,
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     color = Slate500,
                     textAlign = TextAlign.Center
                 )
             }
+
+            // Example Sentence Section
+            if (word.exampleJapanese.isNotBlank()) {
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = LightBg,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "উদাহরণ বাক্য:",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Slate500
+                            )
+
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                IconButton(
+                                    onClick = onSpeakExample,
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.VolumeUp,
+                                        contentDescription = "শুনুন",
+                                        tint = JapanRed,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                IconButton(
+                                    onClick = onPracticeExample,
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Mic,
+                                        contentDescription = "অনুশীলন",
+                                        tint = JapanRed,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        val highlighted = highlightWordInSentence(
+                            sentence = word.exampleJapanese,
+                            target = word.japanese,
+                            highlightColor = JapanRed
+                        )
+
+                        Text(
+                            text = highlighted,
+                            fontSize = 14.sp,
+                            lineHeight = 20.sp,
+                            color = Slate900
+                        )
+
+                        Spacer(modifier = Modifier.height(2.dp))
+
+                        Text(
+                            text = word.exampleBengali,
+                            fontSize = 12.sp,
+                            color = Slate700,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
         }
+
+        Spacer(modifier = Modifier.height(10.dp))
 
         // Bottom Row: Reference Japanese and Report Error button
         Row(

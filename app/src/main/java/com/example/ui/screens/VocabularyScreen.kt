@@ -2,6 +2,7 @@ package com.example.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Card
@@ -43,12 +45,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.VocabularyRepository
 import com.example.data.model.VocabularyItem
 import com.example.ui.components.PandaEmptyState
+import com.example.ui.components.PronunciationPracticeDialog
 import com.example.ui.components.ReportErrorButton
 import com.example.ui.theme.BorderSubtle
 import com.example.ui.theme.CardBg
@@ -72,8 +79,21 @@ fun VocabularyScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("সব") }
 
+    // State for Pronunciation Practice Dialog: Triple(targetJapanese, targetReading, targetMeaning)
+    var practiceTarget by remember { mutableStateOf<Triple<String, String, String>?>(null) }
+
     val filteredWords = remember(searchQuery, selectedCategory) {
         VocabularyRepository.searchWords(searchQuery, selectedCategory)
+    }
+
+    if (practiceTarget != null) {
+        PronunciationPracticeDialog(
+            targetJapanese = practiceTarget!!.first,
+            targetReading = practiceTarget!!.second,
+            targetMeaning = practiceTarget!!.third,
+            onSpeakNative = onSpeakJapanese,
+            onDismiss = { practiceTarget = null }
+        )
     }
 
     Column(
@@ -102,7 +122,7 @@ fun VocabularyScreen(
                         color = Slate900
                     )
                     Text(
-                        text = "${BengaliUtils.toBengaliDigits(filteredWords.size)}টি শব্দ পাওয়া গেছে",
+                        text = "মোট ${BengaliUtils.toBengaliDigits(VocabularyRepository.n5Words.size)}টি আবশ্যক শব্দ",
                         fontSize = 13.sp,
                         color = Slate500
                     )
@@ -118,20 +138,20 @@ fun VocabularyScreen(
                         color = JapanRed,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Search Bar at Top
+            // Search Bar
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 placeholder = {
                     Text(
-                        text = "বাংলা বা জাপানি শব্দ খুঁজুন...",
+                        text = "জাপানি, রোমাজি বা বাংলায় খুঁজুন...",
                         fontSize = 14.sp,
                         color = Slate400
                     )
@@ -139,8 +159,8 @@ fun VocabularyScreen(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Filled.Search,
-                        contentDescription = "খুঁজুন",
-                        tint = JapanRed
+                        contentDescription = "অনুসন্ধান",
+                        tint = Slate400
                     )
                 },
                 trailingIcon = {
@@ -149,79 +169,92 @@ fun VocabularyScreen(
                             Icon(
                                 imageVector = Icons.Filled.Clear,
                                 contentDescription = "পরিষ্কার করুন",
-                                tint = Slate500
+                                tint = Slate400
                             )
                         }
                     }
                 },
-                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("vocab_search_field"),
                 shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = JapanRed,
                     unfocusedBorderColor = BorderSubtle,
                     focusedContainerColor = LightBg,
-                    unfocusedContainerColor = LightBg
+                    unfocusedContainerColor = LightBg,
+                    focusedTextColor = Slate900,
+                    unfocusedTextColor = Slate900
                 ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("search_text_field")
+                singleLine = true
             )
-        }
 
-        // Category Filter Chips
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            items(VocabularyRepository.categories) { category ->
-                val isSelected = selectedCategory == category
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { selectedCategory = category },
-                    label = {
-                        Text(
-                            text = category,
-                            fontSize = 13.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                        )
-                    },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = JapanRed,
-                        selectedLabelColor = Color.White,
-                        containerColor = CardBg,
-                        labelColor = Slate700
-                    ),
-                    border = FilterChipDefaults.filterChipBorder(
-                        enabled = true,
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Category Filter Chips
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(VocabularyRepository.categories) { category ->
+                    val isSelected = category == selectedCategory
+                    FilterChip(
                         selected = isSelected,
-                        borderColor = if (isSelected) JapanRed else BorderSubtle,
-                        selectedBorderColor = JapanRed,
-                        borderWidth = 1.dp
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                )
+                        onClick = { selectedCategory = category },
+                        label = {
+                            Text(
+                                text = category,
+                                fontSize = 12.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = JapanRed,
+                            selectedLabelColor = Color.White,
+                            containerColor = LightBg,
+                            labelColor = Slate700
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            borderColor = if (isSelected) JapanRed else BorderSubtle,
+                            selectedBorderColor = JapanRed,
+                            enabled = true,
+                            selected = isSelected
+                        ),
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                }
             }
         }
 
-        // Vocabulary List or Panda Mascot Empty State
+        // Word List
         if (filteredWords.isEmpty()) {
             PandaEmptyState(
-                title = "কোনো শব্দ খুঁজে পাওয়া যায়নি",
-                subtitle = "অনুগ্রহ করে বানান পরীক্ষা করুন অথবা অন্য কোনো ফিল্টার নির্বাচন করুন। 🐼",
-                modifier = Modifier.fillMaxSize()
+                title = "কোনো শব্দ খুঁজে পাওয়া যায়নি!",
+                subtitle = "বানান সঠিক কিনা যাচাই করে আবার খুঁজুন।",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp)
             )
         } else {
             LazyColumn(
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize().testTag("vocab_list")
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("vocab_list")
             ) {
                 items(filteredWords, key = { it.id }) { word ->
-                    VocabularyCard(
+                    WordItemCard(
                         word = word,
                         showEnglishMeaning = showEnglishMeaning,
                         onSpeak = { onSpeakJapanese(word.japanese) },
+                        onSpeakExample = { onSpeakJapanese(word.exampleJapanese) },
+                        onPracticeWord = {
+                            practiceTarget = Triple(word.japanese, word.furigana, word.bengali)
+                        },
+                        onPracticeExample = {
+                            practiceTarget = Triple(word.exampleJapanese, word.exampleReading, word.exampleBengali)
+                        },
                         onReportError = onReportError
                     )
                 }
@@ -231,19 +264,22 @@ fun VocabularyScreen(
 }
 
 @Composable
-fun VocabularyCard(
+fun WordItemCard(
     word: VocabularyItem,
     showEnglishMeaning: Boolean,
     onSpeak: () -> Unit,
+    onSpeakExample: () -> Unit,
+    onPracticeWord: () -> Unit,
+    onPracticeExample: () -> Unit,
     onReportError: (String) -> Unit
 ) {
     Card(
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = CardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, BorderSubtle, RoundedCornerShape(16.dp))
+            .border(1.dp, BorderSubtle, RoundedCornerShape(18.dp))
             .testTag("vocab_card_${word.id}")
     ) {
         Column(
@@ -281,16 +317,16 @@ fun VocabularyCard(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Middle Row: Japanese (Large) + Romaji + Pronunciation Button
+            // Middle Row: Japanese (Large) + Romaji + Pronunciation Buttons (Speaker & Mic)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = word.japanese,
-                        fontSize = 26.sp,
+                        fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
                         color = Slate900
                     )
@@ -301,35 +337,49 @@ fun VocabularyCard(
                     )
                 }
 
-                IconButton(
-                    onClick = onSpeak,
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .background(JapanRedLight)
-                        .testTag("speak_btn_${word.id}")
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.VolumeUp,
-                        contentDescription = "${word.japanese} উচ্চারণ শুনুন",
-                        tint = JapanRed,
-                        modifier = Modifier.size(22.dp)
-                    )
+                    // Speaker Button (TTS)
+                    IconButton(
+                        onClick = onSpeak,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(JapanRedLight)
+                            .testTag("speak_btn_${word.id}")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.VolumeUp,
+                            contentDescription = "${word.japanese} উচ্চারণ শুনুন",
+                            tint = JapanRed,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    // Microphone Button (Voice Analysis Practice)
+                    IconButton(
+                        onClick = onPracticeWord,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(JapanRedLight)
+                            .testTag("mic_btn_${word.id}")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Mic,
+                            contentDescription = "${word.japanese} উচ্চারণ অনুশীলন করুন",
+                            tint = JapanRed,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(BorderSubtle)
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Bottom Section: Bengali meaning (bold) and conditional English meaning
+            // Bengali meaning (bold) and conditional English meaning
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -360,6 +410,131 @@ fun VocabularyCard(
                     onReportSubmitted = onReportError
                 )
             }
+
+            // Example Sentence Section (Below word and meaning with highlighted target word)
+            if (word.exampleJapanese.isNotBlank()) {
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = LightBg,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "উদাহরণ বাক্য (Example):",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Slate500
+                            )
+
+                            // Action icons for example sentence (Speaker & Mic)
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                IconButton(
+                                    onClick = onSpeakExample,
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.VolumeUp,
+                                        contentDescription = "বাক্যের উচ্চারণ শুনুন",
+                                        tint = JapanRed,
+                                        modifier = Modifier.size(17.dp)
+                                    )
+                                }
+                                IconButton(
+                                    onClick = onPracticeExample,
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Mic,
+                                        contentDescription = "বাক্য উচ্চারণ অনুশীলন",
+                                        tint = JapanRed,
+                                        modifier = Modifier.size(17.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        // Highlighted Target Word inside Japanese Sentence
+                        val highlightedSentence = highlightWordInSentence(
+                            sentence = word.exampleJapanese,
+                            target = word.japanese,
+                            highlightColor = JapanRed
+                        )
+
+                        Text(
+                            text = highlightedSentence,
+                            fontSize = 15.sp,
+                            lineHeight = 22.sp,
+                            color = Slate900
+                        )
+
+                        Spacer(modifier = Modifier.height(3.dp))
+
+                        // Translation in Bengali
+                        Text(
+                            text = word.exampleBengali,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Slate700
+                        )
+
+                        if (showEnglishMeaning && word.exampleEnglish.isNotBlank()) {
+                            Text(
+                                text = word.exampleEnglish,
+                                fontSize = 12.sp,
+                                color = Slate400
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Highlights and underlines the target word inside a Japanese sentence.
+ */
+fun highlightWordInSentence(
+    sentence: String,
+    target: String,
+    highlightColor: Color
+): AnnotatedString {
+    if (target.isBlank() || !sentence.contains(target)) {
+        return AnnotatedString(sentence)
+    }
+
+    return buildAnnotatedString {
+        var startIndex = 0
+        while (startIndex < sentence.length) {
+            val index = sentence.indexOf(target, startIndex)
+            if (index == -1) {
+                append(sentence.substring(startIndex))
+                break
+            }
+            if (index > startIndex) {
+                append(sentence.substring(startIndex, index))
+            }
+            val spanStart = length
+            append(target)
+            val spanEnd = length
+            addStyle(
+                style = SpanStyle(
+                    color = highlightColor,
+                    fontWeight = FontWeight.ExtraBold,
+                    textDecoration = TextDecoration.Underline
+                ),
+                start = spanStart,
+                end = spanEnd
+            )
+            startIndex = index + target.length
         }
     }
 }

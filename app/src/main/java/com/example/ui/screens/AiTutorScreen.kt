@@ -26,14 +26,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Hearing
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -41,7 +40,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -67,7 +65,6 @@ import com.example.ui.theme.Slate400
 import com.example.ui.theme.Slate500
 import com.example.ui.theme.Slate700
 import com.example.ui.theme.Slate900
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 data class LessonCardData(
@@ -98,21 +95,22 @@ fun AiTutorScreen(
 
     var inputText by remember { mutableStateOf("") }
 
+    // User requested welcome message and placeholder Lesson Card structure
     val messages = remember {
         mutableStateListOf(
             ChatMessage(
                 id = "1",
-                text = "কোননিচিওয়া! (こんにちは!) 🙏 আমি তোমার জাপানি ভাষা শেখার AI শিক্ষক।\nতুমি যেকোনো জাপানি শব্দ, ব্যাকরণ বা উচ্চারণ সম্পর্কে আমাকে জিজ্ঞেস করতে পারো।",
+                text = "কোননিচিওয়া! আমি তোমার জাপানি AI শিক্ষক। আমি এখনো শেখার মোডে আছি, শীঘ্রই আমি সম্পূর্ণভাবে তোমার সাথে কথা বলতে পারব! 🌸",
                 isUser = false,
-                timestamp = "১০:০০ AM",
+                timestamp = "এখন",
                 lessonCard = LessonCardData(
-                    word = "ありがとう",
-                    furigana = "ありがとう",
-                    romaji = "arigatou",
-                    bengaliMeaning = "ধন্যবাদ",
-                    exampleJapanese = "どうもありがとうございます",
-                    exampleReading = "doumo arigatou gozaimasu",
-                    exampleBengali = "আপনাকে অনেক অনেক ধন্যবাদ।"
+                    word = "日本語",
+                    furigana = "にほんご",
+                    romaji = "nihongo",
+                    bengaliMeaning = "জাপানি ভাষা (Japanese Language)",
+                    exampleJapanese = "日本語を勉強します。",
+                    exampleReading = "nihongo o benkyou shimasu.",
+                    exampleBengali = "আমি জাপানি ভাষা শিখছি।"
                 )
             )
         )
@@ -138,88 +136,6 @@ fun AiTutorScreen(
 
         coroutineScope.launch {
             listState.animateScrollToItem(messages.size - 1)
-            delay(500)
-
-            // Intelligent placeholder response based on query
-            val reply = when {
-                text.contains("শব্দ") || text.contains("শব্দ শেখাও") -> ChatMessage(
-                    id = (System.currentTimeMillis() + 1).toString(),
-                    text = "খুব সুন্দর! আজ আমরা একটি অত্যন্ত প্রয়োজনীয় শব্দ শিখবো: 'বন্ধু' (ともだち)",
-                    isUser = false,
-                    timestamp = "এখন",
-                    lessonCard = LessonCardData(
-                        word = "友達",
-                        furigana = "ともだち",
-                        romaji = "tomodachi",
-                        bengaliMeaning = "বন্ধু (Friend)",
-                        exampleJapanese = "彼は私の友達です。",
-                        exampleReading = "kare wa watashi no tomodachi desu.",
-                        exampleBengali = "সে আমার বন্ধু।"
-                    )
-                )
-                text.contains("গ্রামার") || text.contains("গ্রামার বুঝিয়ে দাও") -> ChatMessage(
-                    id = (System.currentTimeMillis() + 1).toString(),
-                    text = "চমৎকার প্রশ্ন! জাপানি ভাষার সবচেয়ে সহজ ও মৌলিক প্যাটার্ন হলো '〜は〜です' (আমি/এটা হলো...)",
-                    isUser = false,
-                    timestamp = "এখন",
-                    lessonCard = LessonCardData(
-                        word = "〜は〜です",
-                        furigana = "〜は〜です",
-                        romaji = "~ wa ~ desu",
-                        bengaliMeaning = "A হলো B (Affirmative statement)",
-                        exampleJapanese = "私は学生です。",
-                        exampleReading = "watashi wa gakusei desu.",
-                        exampleBengali = "আমি একজন শিক্ষার্থী।"
-                    )
-                )
-                text.contains("কুইজ") || text.contains("কুইজ নাও") -> ChatMessage(
-                    id = (System.currentTimeMillis() + 1).toString(),
-                    text = "চলো একটি ছোট্ট পরীক্ষা নেওয়া যাক! নিচের শব্দটি শুনো এবং অর্থ বলো:",
-                    isUser = false,
-                    timestamp = "এখন",
-                    lessonCard = LessonCardData(
-                        word = "先生",
-                        furigana = "せんせい",
-                        romaji = "sensei",
-                        bengaliMeaning = "শিক্ষক / ওস্তাদ",
-                        exampleJapanese = "先生、おはようございます。",
-                        exampleReading = "sensei, ohayou gozaimasu.",
-                        exampleBengali = "স্যার, শুভ সকাল।"
-                    )
-                )
-                text.contains("উচ্চারণ") || text.contains("উচ্চারণ শেখাও") -> ChatMessage(
-                    id = (System.currentTimeMillis() + 1).toString(),
-                    text = "জাপানি উচ্চারণে স্বরবর্ণের সঠিক টান খুব গুরুত্বপূর্ণ। নিচের স্পিকার বাটনে চাপ দিয়ে উচ্চারণ শুনুন:",
-                    isUser = false,
-                    timestamp = "এখন",
-                    lessonCard = LessonCardData(
-                        word = "さようなら",
-                        furigana = "さようなら",
-                        romaji = "sayounara",
-                        bengaliMeaning = "বিদায় (Goodbye)",
-                        exampleJapanese = "皆さん、また明日、さようなら。",
-                        exampleReading = "minasan, mata ashita, sayounara.",
-                        exampleBengali = "সবাইকে কাল দেখা হবে, বিদায়।"
-                    )
-                )
-                else -> ChatMessage(
-                    id = (System.currentTimeMillis() + 1).toString(),
-                    text = "চমৎকার বার্তা! আপনি লিখেছেন: \"$text\"। আমি জাপানি N5 সিলেবাসের সাথে মিলিয়ে আপনাকে সহায়তা করতে তৈরি। নিচে স্পিকার আইকনে চাপ দিয়ে জাপানি শব্দের শুদ্ধ উচ্চারণ শুনুন।",
-                    isUser = false,
-                    timestamp = "এখন",
-                    lessonCard = LessonCardData(
-                        word = "こんにちは",
-                        furigana = "こんにちは",
-                        romaji = "konnichiwa",
-                        bengaliMeaning = "শুভ দিন / আসসালামু আলাইকুম",
-                        exampleJapanese = "こんにちは、お元気ですか。",
-                        exampleReading = "konnichiwa, ogenki desu ka.",
-                        exampleBengali = "হ্যালো, আপনি কেমন আছেন?"
-                    )
-                )
-            }
-            messages.add(reply)
-            listState.animateScrollToItem(messages.size - 1)
         }
     }
 
@@ -239,12 +155,12 @@ fun AiTutorScreen(
         ) {
             Box {
                 PandaAvatar(size = 46.dp)
-                // Online green badge
+                // Mode indicator badge (Amber/learning mode)
                 Box(
                     modifier = Modifier
                         .size(12.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFF10B981))
+                        .background(Color(0xFFF59E0B))
                         .border(2.dp, CardBg, CircleShape)
                         .align(Alignment.BottomEnd)
                 )
@@ -269,14 +185,41 @@ fun AiTutorScreen(
                     )
                 }
                 Text(
-                    text = "অনলাইনে আছেন 🌸 (JLPT N5 গৃহশিক্ষক)",
+                    text = "শেখার মোডে আছে 🌸 (শিঘ্রই লাইভ চ্যাট যুক্ত হবে)",
                     fontSize = 12.sp,
                     color = Slate500
                 )
             }
         }
 
-        // Chat Message Area
+        // Informational Training Notice
+        Surface(
+            shape = RoundedCornerShape(0.dp),
+            color = JapanRedLight,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Info,
+                    contentDescription = null,
+                    tint = JapanRed,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Gemini AI শিক্ষক মডেল তৈরি হচ্ছে। নিচে ইন্টারফেসটির ডিজাইন ও লেসন কার্ড দেখতে পারেন।",
+                    fontSize = 11.sp,
+                    color = JapanRed,
+                    fontWeight = FontWeight.Medium,
+                    lineHeight = 16.sp
+                )
+            }
+        }
+
+        // Chat Message History
         LazyColumn(
             state = listState,
             modifier = Modifier

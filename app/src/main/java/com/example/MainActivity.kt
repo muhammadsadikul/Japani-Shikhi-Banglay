@@ -33,6 +33,7 @@ import com.example.ui.screens.FlashcardScreen
 import com.example.ui.screens.GrammarScreen
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.KanjiScreen
+import com.example.ui.screens.LanguageSelectionScreen
 import com.example.ui.screens.ProfileScreen
 import com.example.ui.screens.QuizScreen
 import com.example.ui.screens.SettingsScreen
@@ -83,10 +84,18 @@ fun MainAppHost(
     modifier: Modifier = Modifier
 ) {
     var isSplashVisible by remember { mutableStateOf(true) }
+    val hasSelectedLanguage by settingsManager.hasSelectedLanguage.collectAsState()
 
     if (isSplashVisible) {
         SplashScreen(
             onSplashFinished = { isSplashVisible = false }
+        )
+    } else if (!hasSelectedLanguage) {
+        LanguageSelectionScreen(
+            onLanguageSelected = { selectedLang ->
+                settingsManager.setAppLanguage(selectedLang)
+            },
+            modifier = modifier
         )
     } else {
         MainApp(

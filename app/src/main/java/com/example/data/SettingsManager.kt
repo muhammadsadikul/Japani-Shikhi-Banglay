@@ -15,7 +15,19 @@ class SettingsManager(context: Context) {
         private const val KEY_SHOW_ENGLISH = "key_show_english"
         private const val KEY_NOTIFICATIONS = "key_notifications"
         private const val KEY_REMINDER_TIME = "key_reminder_time"
+        private const val KEY_APP_LANGUAGE = "key_app_language"
+        private const val KEY_LANGUAGE_SELECTED = "key_language_selected"
     }
+
+    private val _appLanguage = MutableStateFlow(
+        prefs.getString(KEY_APP_LANGUAGE, "bn") ?: "bn"
+    )
+    val appLanguage: StateFlow<String> = _appLanguage.asStateFlow()
+
+    private val _hasSelectedLanguage = MutableStateFlow(
+        prefs.getBoolean(KEY_LANGUAGE_SELECTED, false)
+    )
+    val hasSelectedLanguage: StateFlow<Boolean> = _hasSelectedLanguage.asStateFlow()
 
     private val _isDarkMode = MutableStateFlow<Boolean?>(
         if (prefs.contains(KEY_DARK_MODE)) prefs.getBoolean(KEY_DARK_MODE, false) else null
@@ -62,5 +74,14 @@ class SettingsManager(context: Context) {
     fun setReminderTime(time: String) {
         _reminderTime.value = time
         prefs.edit().putString(KEY_REMINDER_TIME, time).apply()
+    }
+
+    fun setAppLanguage(lang: String) {
+        _appLanguage.value = lang
+        _hasSelectedLanguage.value = true
+        prefs.edit()
+            .putString(KEY_APP_LANGUAGE, lang)
+            .putBoolean(KEY_LANGUAGE_SELECTED, true)
+            .apply()
     }
 }
