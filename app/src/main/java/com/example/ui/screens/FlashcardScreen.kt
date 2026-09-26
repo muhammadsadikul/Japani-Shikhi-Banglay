@@ -5,7 +5,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,7 +24,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Flip
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.outlined.CheckCircle
@@ -61,9 +59,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.VocabularyRepository
 import com.example.data.model.VocabularyItem
+import com.example.ui.components.ReportErrorButton
 import com.example.ui.theme.BorderSubtle
 import com.example.ui.theme.CardBg
-import com.example.ui.theme.Emerald50
 import com.example.ui.theme.Emerald600
 import com.example.ui.theme.JapanRed
 import com.example.ui.theme.JapanRedBorder
@@ -77,7 +75,9 @@ import com.example.util.BengaliUtils
 
 @Composable
 fun FlashcardScreen(
+    showEnglishMeaning: Boolean,
     onSpeakJapanese: (String) -> Unit,
+    onReportError: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var words by remember { mutableStateOf(VocabularyRepository.n5Words) }
@@ -192,7 +192,7 @@ fun FlashcardScreen(
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp)),
                 color = JapanRed,
-                trackColor = BorderSubtle,
+                trackColor = BorderSubtle
             )
         }
 
@@ -201,7 +201,7 @@ fun FlashcardScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .padding(vertical = 16.dp)
+                .padding(vertical = 12.dp)
                 .pointerInput(Unit) {
                     detectHorizontalDragGestures(
                         onDragEnd = {
@@ -229,7 +229,7 @@ fun FlashcardScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(340.dp)
+                    .height(350.dp)
                     .graphicsLayer {
                         rotationY = rotation
                         cameraDistance = 12f * density
@@ -237,25 +237,26 @@ fun FlashcardScreen(
                     .border(1.5.dp, if (isFlipped) JapanRedBorder else BorderSubtle, RoundedCornerShape(20.dp))
                     .testTag("interactive_flashcard")
             ) {
-                // If rotated more than 90 deg, show Back side (flipped 180 to remain upright)
                 if (rotation > 90f) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .graphicsLayer { rotationY = 180f }
-                            .padding(24.dp),
+                            .padding(20.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         FlashcardBack(
                             word = currentWord,
-                            onSpeak = { onSpeakJapanese(currentWord.japanese) }
+                            showEnglishMeaning = showEnglishMeaning,
+                            onSpeak = { onSpeakJapanese(currentWord.japanese) },
+                            onReportError = onReportError
                         )
                     }
                 } else {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(24.dp),
+                            .padding(20.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         FlashcardFront(word = currentWord)
@@ -269,13 +270,10 @@ fun FlashcardScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Flip Hint button
             OutlinedButton(
                 onClick = { isFlipped = !isFlipped },
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = JapanRed
-                ),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = JapanRed),
                 border = androidx.compose.foundation.BorderStroke(1.dp, JapanRedBorder),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -295,7 +293,7 @@ fun FlashcardScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Previous and Next Buttons
             Row(
@@ -307,7 +305,7 @@ fun FlashcardScreen(
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier
                         .weight(1f)
-                        .height(52.dp)
+                        .height(50.dp)
                         .testTag("prev_card_button"),
                     border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle)
                 ) {
@@ -317,10 +315,10 @@ fun FlashcardScreen(
                         tint = Slate700,
                         modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "পূর্ববর্তী",
-                        fontSize = 15.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Slate700
                     )
@@ -332,16 +330,16 @@ fun FlashcardScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = JapanRed),
                     modifier = Modifier
                         .weight(1f)
-                        .height(52.dp)
+                        .height(50.dp)
                         .testTag("next_card_button")
                 ) {
                     Text(
                         text = "পরবর্তী",
-                        fontSize = 15.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = "পরবর্তী শব্দ",
@@ -351,7 +349,7 @@ fun FlashcardScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(6.dp))
         }
     }
 }
@@ -363,7 +361,6 @@ fun FlashcardFront(word: VocabularyItem) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Category Badge
         Surface(
             shape = RoundedCornerShape(8.dp),
             color = JapanRedLight,
@@ -378,24 +375,17 @@ fun FlashcardFront(word: VocabularyItem) {
             )
         }
 
-        // Japanese Word (Large, Centered)
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = 8.dp)
-        ) {
-            Text(
-                text = word.japanese,
-                fontSize = 44.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Slate900,
-                textAlign = TextAlign.Center
-            )
-        }
+        Text(
+            text = word.japanese,
+            fontSize = 44.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = Slate900,
+            textAlign = TextAlign.Center
+        )
 
-        // Tap to flip hint
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 6.dp)
+            modifier = Modifier.padding(bottom = 4.dp)
         ) {
             Icon(
                 imageVector = Icons.Filled.Flip,
@@ -417,7 +407,9 @@ fun FlashcardFront(word: VocabularyItem) {
 @Composable
 fun FlashcardBack(
     word: VocabularyItem,
-    onSpeak: () -> Unit
+    showEnglishMeaning: Boolean,
+    onSpeak: () -> Unit,
+    onReportError: (String) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -440,7 +432,7 @@ fun FlashcardBack(
             IconButton(
                 onClick = onSpeak,
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(38.dp)
                     .clip(CircleShape)
                     .background(JapanRedLight)
                     .testTag("flashcard_speak_button")
@@ -461,43 +453,55 @@ fun FlashcardBack(
         ) {
             Text(
                 text = word.romaji,
-                fontSize = 16.sp,
+                fontSize = 15.sp,
                 color = Slate500,
                 fontWeight = FontWeight.Medium
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = word.bengali,
-                fontSize = 28.sp,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Slate900,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = word.english,
-                fontSize = 15.sp,
-                color = Slate500,
-                textAlign = TextAlign.Center
-            )
+            if (showEnglishMeaning) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = word.english,
+                    fontSize = 14.sp,
+                    color = Slate500,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
 
-        // Original Japanese reference at bottom
-        Surface(
-            shape = RoundedCornerShape(8.dp),
-            color = LightBg,
-            border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle)
+        // Bottom Row: Reference Japanese and Report Error button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "শব্দ: ${word.japanese}",
-                fontSize = 13.sp,
-                color = Slate700,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = LightBg,
+                border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle)
+            ) {
+                Text(
+                    text = word.japanese,
+                    fontSize = 12.sp,
+                    color = Slate700,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                )
+            }
+
+            ReportErrorButton(
+                itemName = "ফ্ল্যাশকার্ড: ${word.japanese}",
+                onReportSubmitted = onReportError
             )
         }
     }

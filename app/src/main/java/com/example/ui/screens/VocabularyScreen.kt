@@ -2,7 +2,6 @@ package com.example.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,7 +21,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Card
@@ -50,6 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.VocabularyRepository
 import com.example.data.model.VocabularyItem
+import com.example.ui.components.PandaEmptyState
+import com.example.ui.components.ReportErrorButton
 import com.example.ui.theme.BorderSubtle
 import com.example.ui.theme.CardBg
 import com.example.ui.theme.JapanRed
@@ -64,7 +64,9 @@ import com.example.util.BengaliUtils
 
 @Composable
 fun VocabularyScreen(
+    showEnglishMeaning: Boolean,
     onSpeakJapanese: (String) -> Unit,
+    onReportError: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -202,40 +204,25 @@ fun VocabularyScreen(
             }
         }
 
-        // Vocabulary List
+        // Vocabulary List or Panda Mascot Empty State
         if (filteredWords.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "কোনো শব্দ খুঁজে পাওয়া যায়নি",
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Slate700
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "বানান ঠিক আছে কিনা পরীক্ষা করুন বা ফিল্টার পরিবর্তন করুন।",
-                        fontSize = 13.sp,
-                        color = Slate500,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                }
-            }
+            PandaEmptyState(
+                title = "কোনো শব্দ খুঁজে পাওয়া যায়নি",
+                subtitle = "অনুগ্রহ করে বানান পরীক্ষা করুন অথবা অন্য কোনো ফিল্টার নির্বাচন করুন। 🐼",
+                modifier = Modifier.fillMaxSize()
+            )
         } else {
             LazyColumn(
-                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 24.dp),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxSize().testTag("vocab_list")
             ) {
                 items(filteredWords, key = { it.id }) { word ->
                     VocabularyCard(
                         word = word,
-                        onSpeak = { onSpeakJapanese(word.japanese) }
+                        showEnglishMeaning = showEnglishMeaning,
+                        onSpeak = { onSpeakJapanese(word.japanese) },
+                        onReportError = onReportError
                     )
                 }
             }
@@ -246,7 +233,9 @@ fun VocabularyScreen(
 @Composable
 fun VocabularyCard(
     word: VocabularyItem,
-    onSpeak: () -> Unit
+    showEnglishMeaning: Boolean,
+    onSpeak: () -> Unit,
+    onReportError: (String) -> Unit
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -268,7 +257,6 @@ fun VocabularyCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Furigana reading
                 Text(
                     text = word.furigana,
                     fontSize = 14.sp,
@@ -276,7 +264,6 @@ fun VocabularyCard(
                     fontWeight = FontWeight.SemiBold
                 )
 
-                // Category Tag
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = LightBg,
@@ -301,14 +288,12 @@ fun VocabularyCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    // Japanese word (large)
                     Text(
                         text = word.japanese,
                         fontSize = 26.sp,
                         fontWeight = FontWeight.Bold,
                         color = Slate900
                     )
-                    // Romaji
                     Text(
                         text = word.romaji,
                         fontSize = 13.sp,
@@ -316,7 +301,6 @@ fun VocabularyCard(
                     )
                 }
 
-                // Audio Button
                 IconButton(
                     onClick = onSpeak,
                     modifier = Modifier
@@ -334,9 +318,8 @@ fun VocabularyCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Divider line
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -346,22 +329,37 @@ fun VocabularyCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Bottom Section: Bengali meaning (bold) and English meaning (small gray)
-            Text(
-                text = word.bengali,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold,
-                color = Slate900
-            )
+            // Bottom Section: Bengali meaning (bold) and conditional English meaning
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = word.bengali,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Slate900
+                    )
 
-            Spacer(modifier = Modifier.height(2.dp))
+                    if (showEnglishMeaning) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = word.english,
+                            fontSize = 13.sp,
+                            color = Slate400,
+                            fontWeight = FontWeight.Normal
+                        )
+                    }
+                }
 
-            Text(
-                text = word.english,
-                fontSize = 13.sp,
-                color = Slate400,
-                fontWeight = FontWeight.Normal
-            )
+                // Report Error (ভুল আছে?) Button
+                ReportErrorButton(
+                    itemName = "${word.japanese} (${word.bengali})",
+                    onReportSubmitted = onReportError
+                )
+            }
         }
     }
 }

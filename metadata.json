@@ -1,6 +1,6 @@
 {
-  "name": "Japanese for Bangla",
-  "description": "জাপানি শিখি বাংলায় — N5 থেকে N1 বাংলায় সহজে জাপানি শব্দভাণ্ডার ও ফ্ল্যাশকার্ড দিয়ে শিখুন।",
+  "name": "জাপানি শিখি বাংলায়",
+  "description": "জাপানি শিখি বাংলায় — N5 থেকে N1 বাংলায় সহজে জাপানি শব্দভাণ্ডার, কাঞ্জি, ব্যাকরণ ও ফ্ল্যাশকার্ড দিয়ে শিখুন।",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
