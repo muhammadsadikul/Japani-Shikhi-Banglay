@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- White circular card base (safe zone 66dp centered at 54,54) -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M54,54m-27,0a27,27 0 1,0 54,0a27,27 0 1,0 -54,0" />
+    
+    <!-- Soft shadow behind badge -->
+    <path
+        android:fillColor="#20000000"
+        android:pathData="M54,56m-26,0a26,26 0 1,0 52,0a26,26 0 1,0 -52,0" />
+
+    <!-- Open book / flashcards shape in vibrant Crimson #E11D48 -->
+    <path
+        android:fillColor="#E11D48"
+        android:pathData="M38,44 C38,41.8 39.8,40 42,40 L50,40 C52.2,40 54,41.8 54,44 L54,66 C54,64.5 52.5,63.5 50.5,63.5 L42,63.5 C39.8,63.5 38,65.3 38,67.5 Z" />
+    <path
+        android:fillColor="#BE123C"
+        android:pathData="M70,44 C70,41.8 68.2,40 66,40 L58,40 C55.8,40 54,41.8 54,44 L54,66 C54,64.5 55.5,63.5 57.5,63.5 L66,63.5 C68.2,63.5 70,65.3 70,67.5 Z" />
+
+    <!-- Japanese '日' (sun/Japan) horizontal and vertical lines in white on the book page -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M43,45 L49,45 L49,57 L43,57 Z" />
+    <path
+        android:fillColor="#E11D48"
+        android:pathData="M44.5,46.5 L47.5,46.5 L47.5,50 L44.5,50 Z" />
+    <path
+        android:fillColor="#E11D48"
+        android:pathData="M44.5,51.5 L47.5,51.5 L47.5,55.5 L44.5,55.5 Z" />
+
+    <!-- Bengali 'বা' / 'ব' hint representation / accent lines on the right page -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M59,45 L65,45 L65,47 L59,47 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M59,49 L64,49 L64,51 L59,51 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M59,53 L65,53 L65,55 L59,55 Z" />
+
+    <!-- Rising Sun accent dot above -->
+    <path
+        android:fillColor="#E11D48"
+        android:pathData="M54,34m-3.5,0a3.5,3.5 0 1,0 7,0a3.5,3.5 0 1,0 -7,0" />
+</vector>

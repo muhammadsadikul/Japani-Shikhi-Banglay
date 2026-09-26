@@ -1,0 +1,452 @@
+[
+  {
+    "id": 1,
+    "japanese": "私",
+    "furigana": "わたし",
+    "romaji": "watashi",
+    "bengali": "আমি",
+    "english": "I, me",
+    "category": "সর্বনাম"
+  },
+  {
+    "id": 2,
+    "japanese": "あなた",
+    "furigana": "あなた",
+    "romaji": "anata",
+    "bengali": "আপনি / তুমি",
+    "english": "you",
+    "category": "সর্বনাম"
+  },
+  {
+    "id": 3,
+    "japanese": "学生",
+    "furigana": "がくせい",
+    "romaji": "gakusei",
+    "bengali": "ছাত্র / ছাত্রী",
+    "english": "student",
+    "category": "বিশেষ্য"
+  },
+  {
+    "id": 4,
+    "japanese": "先生",
+    "furigana": "せんせい",
+    "romaji": "sensei",
+    "bengali": "শিক্ষক / শিক্ষিকা",
+    "english": "teacher",
+    "category": "বিশেষ্য"
+  },
+  {
+    "id": 5,
+    "japanese": "学校",
+    "furigana": "がっこう",
+    "romaji": "gakkou",
+    "bengali": "বিদ্যালয় / স্কুল",
+    "english": "school",
+    "category": "বিশেষ্য"
+  },
+  {
+    "id": 6,
+    "japanese": "食べる",
+    "furigana": "たべる",
+    "romaji": "taberu",
+    "bengali": "খাওয়া",
+    "english": "to eat",
+    "category": "ক্রিয়া"
+  },
+  {
+    "id": 7,
+    "japanese": "飲む",
+    "furigana": "のむ",
+    "romaji": "nomu",
+    "bengali": "পান করা",
+    "english": "to drink",
+    "category": "ক্রিয়া"
+  },
+  {
+    "id": 8,
+    "japanese": "行く",
+    "furigana": "いく",
+    "romaji": "iku",
+    "bengali": "যাওয়া",
+    "english": "to go",
+    "category": "ক্রিয়া"
+  },
+  {
+    "id": 9,
+    "japanese": "来る",
+    "furigana": "くる",
+    "romaji": "kuru",
+    "bengali": "আসা",
+    "english": "to come",
+    "category": "ক্রিয়া"
+  },
+  {
+    "id": 10,
+    "japanese": "見る",
+    "furigana": "みる",
+    "romaji": "miru",
+    "bengali": "দেখা",
+    "english": "to see, watch",
+    "category": "ক্রিয়া"
+  },
+  {
+    "id": 11,
+    "japanese": "聞く",
+    "furigana": "きく",
+    "romaji": "kiku",
+    "bengali": "শোনা / জিজ্ঞাসা করা",
+    "english": "to hear, listen",
+    "category": "ক্রিয়া"
+  },
+  {
+    "id": 12,
+    "japanese": "話す",
+    "furigana": "はなす",
+    "romaji": "hanasu",
+    "bengali": "কথা বলা",
+    "english": "to speak, talk",
+    "category": "ক্রিয়া"
+  },
+  {
+    "id": 13,
+    "japanese": "読む",
+    "furigana": "よむ",
+    "romaji": "yomu",
+    "bengali": "পড়া",
+    "english": "to read",
+    "category": "ক্রিয়া"
+  },
+  {
+    "id": 14,
+    "japanese": "書く",
+    "furigana": "かく",
+    "romaji": "kaku",
+    "bengali": "লেখা",
+    "english": "to write",
+    "category": "ক্রিয়া"
+  },
+  {
+    "id": 15,
+    "japanese": "買う",
+    "furigana": "かう",
+    "romaji": "kau",
+    "bengali": "কেনা",
+    "english": "to buy",
+    "category": "ক্রিয়া"
+  },
+  {
+    "id": 16,
+    "japanese": "大きい",
+    "furigana": "おおきい",
+    "romaji": "ookii",
+    "bengali": "বড়",
+    "english": "big, large",
+    "category": "বিশেষণ"
+  },
+  {
+    "id": 17,
+    "japanese": "小さい",
+    "furigana": "ちいさい",
+    "romaji": "chiisai",
+    "bengali": "ছোট",
+    "english": "small, little",
+    "category": "বিশেষণ"
+  },
+  {
+    "id": 18,
+    "japanese": "新しい",
+    "furigana": "あたらしい",
+    "romaji": "atarashii",
+    "bengali": "নতুন",
+    "english": "new",
+    "category": "বিশেষণ"
+  },
+  {
+    "id": 19,
+    "japanese": "古い",
+    "furigana": "ふるい",
+    "romaji": "furui",
+    "bengali": "পুরাতন / পুরোনো",
+    "english": "old",
+    "category": "বিশেষণ"
+  },
+  {
+    "id": 20,
+    "japanese": "いい",
+    "furigana": "いい",
+    "romaji": "ii",
+    "bengali": "ভালো",
+    "english": "good",
+    "category": "বিশেষণ"
+  },
+  {
+    "id": 21,
+    "japanese": "悪い",
+    "furigana": "わるい",
+    "romaji": "warui",
+    "bengali": "খারাপ",
+    "english": "bad",
+    "category": "বিশেষণ"
+  },
+  {
+    "id": 22,
+    "japanese": "高い",
+    "furigana": "たかい",
+    "romaji": "takai",
+    "bengali": "উঁচু / দামি",
+    "english": "expensive, high",
+    "category": "বিশেষণ"
+  },
+  {
+    "id": 23,
+    "japanese": "安い",
+    "furigana": "やすい",
+    "romaji": "yasui",
+    "bengali": "সস্তা",
+    "english": "cheap, inexpensive",
+    "category": "বিশেষণ"
+  },
+  {
+    "id": 24,
+    "japanese": "人",
+    "furigana": "ひと",
+    "romaji": "hito",
+    "bengali": "মানুষ / ব্যক্তি",
+    "english": "person",
+    "category": "বিশেষ্য"
+  },
+  {
+    "id": 25,
+    "japanese": "日本",
+    "furigana": "にほん",
+    "romaji": "nihon",
+    "bengali": "জাপান",
+    "english": "Japan",
+    "category": "বিশেষ্য"
+  },
+  {
+    "id": 26,
+    "japanese": "日本語",
+    "furigana": "にほんご",
+    "romaji": "nihongo",
+    "bengali": "জাপানি ভাষা",
+    "english": "Japanese language",
+    "category": "বিশেষ্য"
+  },
+  {
+    "id": 27,
+    "japanese": "本",
+    "furigana": "ほん",
+    "romaji": "hon",
+    "bengali": "বই",
+    "english": "book",
+    "category": "বিশেষ্য"
+  },
+  {
+    "id": 28,
+    "japanese": "水",
+    "furigana": "みず",
+    "romaji": "mizu",
+    "bengali": "পানি / জল",
+    "english": "water",
+    "category": "বিশেষ্য"
+  },
+  {
+    "id": 29,
+    "japanese": "ご飯",
+    "furigana": "ごはん",
+    "romaji": "gohan",
+    "bengali": "ভাত / খাবার",
+    "english": "cooked rice, meal",
+    "category": "বিশেষ্য"
+  },
+  {
+    "id": 30,
+    "japanese": "車",
+    "furigana": "くるま",
+    "romaji": "kuruma",
+    "bengali": "গাড়ি",
+    "english": "car, vehicle",
+    "category": "বিশেষ্য"
+  },
+  {
+    "id": 31,
+    "japanese": "家",
+    "furigana": "いえ",
+    "romaji": "ie",
+    "bengali": "বাড়ি / ঘর",
+    "english": "house, home",
+    "category": "বিশেষ্য"
+  },
+  {
+    "id": 32,
+    "japanese": "友達",
+    "furigana": "ともだち",
+    "romaji": "tomodachi",
+    "bengali": "বন্ধু",
+    "english": "friend",
+    "category": "বিশেষ্য"
+  },
+  {
+    "id": 33,
+    "japanese": "今日",
+    "furigana": "きょう",
+    "romaji": "kyou",
+    "bengali": "আজ",
+    "english": "today",
+    "category": "সময়"
+  },
+  {
+    "id": 34,
+    "japanese": "明日",
+    "furigana": "あした",
+    "romaji": "ashita",
+    "bengali": "আগামীকাল",
+    "english": "tomorrow",
+    "category": "সময়"
+  },
+  {
+    "id": 35,
+    "japanese": "昨日",
+    "furigana": "きのう",
+    "romaji": "kinou",
+    "bengali": "গতকাল",
+    "english": "yesterday",
+    "category": "সময়"
+  },
+  {
+    "id": 36,
+    "japanese": "朝",
+    "furigana": "あさ",
+    "romaji": "asa",
+    "bengali": "সকাল",
+    "english": "morning",
+    "category": "সময়"
+  },
+  {
+    "id": 37,
+    "japanese": "夜",
+    "furigana": "よる",
+    "romaji": "yoru",
+    "bengali": "রাত",
+    "english": "night",
+    "category": "সময়"
+  },
+  {
+    "id": 38,
+    "japanese": "起きる",
+    "furigana": "おきる",
+    "romaji": "okiru",
+    "bengali": "ঘুম থেকে ওঠা",
+    "english": "to wake up",
+    "category": "ক্রিয়া"
+  },
+  {
+    "id": 39,
+    "japanese": "寝る",
+    "furigana": "ねる",
+    "romaji": "neru",
+    "bengali": "ঘুমানো",
+    "english": "to sleep, go to bed",
+    "category": "ক্রিয়া"
+  },
+  {
+    "id": 40,
+    "japanese": "会う",
+    "furigana": "あう",
+    "romaji": "au",
+    "bengali": "দেখা করা / সাক্ষাৎ করা",
+    "english": "to meet",
+    "category": "ক্রিয়া"
+  },
+  {
+    "id": 41,
+    "japanese": "待つ",
+    "furigana": "まつ",
+    "romaji": "matsu",
+    "bengali": "অপেক্ষা করা",
+    "english": "to wait",
+    "category": "ক্রিয়া"
+  },
+  {
+    "id": 42,
+    "japanese": "帰る",
+    "furigana": "かえる",
+    "romaji": "kaeru",
+    "bengali": "ফিরে যাওয়া / ফেরা",
+    "english": "to return, go back",
+    "category": "ক্রিয়া"
+  },
+  {
+    "id": 43,
+    "japanese": "暑い",
+    "furigana": "あつい",
+    "romaji": "atsui",
+    "bengali": "গরম (আবহাওয়া)",
+    "english": "hot (weather)",
+    "category": "বিশেষণ"
+  },
+  {
+    "id": 44,
+    "japanese": "寒い",
+    "furigana": "さむい",
+    "romaji": "samui",
+    "bengali": "ঠান্ডা (আবহাওয়া)",
+    "english": "cold (weather)",
+    "category": "বিশেষণ"
+  },
+  {
+    "id": 45,
+    "japanese": "難しい",
+    "furigana": "むずかしい",
+    "romaji": "muzukashii",
+    "bengali": "কঠিন",
+    "english": "difficult",
+    "category": "বিশেষণ"
+  },
+  {
+    "id": 46,
+    "japanese": "易しい",
+    "furigana": "やさしい",
+    "romaji": "yasashii",
+    "bengali": "সহজ",
+    "english": "easy, gentle",
+    "category": "বিশেষণ"
+  },
+  {
+    "id": 47,
+    "japanese": "時間",
+    "furigana": "じかん",
+    "romaji": "jikan",
+    "bengali": "সময়",
+    "english": "time, hour",
+    "category": "সময়"
+  },
+  {
+    "id": 48,
+    "japanese": "お金",
+    "furigana": "おかね",
+    "romaji": "okane",
+    "bengali": "টাকা / অর্থ",
+    "english": "money",
+    "category": "বিশেষ্য"
+  },
+  {
+    "id": 49,
+    "japanese": "好き",
+    "furigana": "すき",
+    "romaji": "suki",
+    "bengali": "পছন্দ / প্রিয়",
+    "english": "like, fond of",
+    "category": "বিশেষণ"
+  },
+  {
+    "id": 50,
+    "japanese": "ありがとう",
+    "furigana": "ありがとう",
+    "romaji": "arigatou",
+    "bengali": "ধন্যবাদ",
+    "english": "thank you",
+    "category": "অভিবাদন"
+  }
+]

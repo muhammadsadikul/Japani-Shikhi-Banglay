@@ -1,0 +1,15 @@
+{
+  "appId": "com.aistudio.japanesebangla.jpbd",
+  "appName": "Japanese for Bangla",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "buildOptions": {
+      "keystorePath": "",
+      "releaseType": "APK"
+    }
+  }
+}

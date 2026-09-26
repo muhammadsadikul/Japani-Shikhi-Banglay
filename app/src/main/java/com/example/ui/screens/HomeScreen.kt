@@ -1,0 +1,416 @@
+package com.example.ui.screens
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Style
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.ui.components.AppScreen
+import com.example.ui.theme.Amber50
+import com.example.ui.theme.Amber600
+import com.example.ui.theme.BorderSubtle
+import com.example.ui.theme.CardBg
+import com.example.ui.theme.Emerald50
+import com.example.ui.theme.Emerald600
+import com.example.ui.theme.JapanRed
+import com.example.ui.theme.JapanRedBorder
+import com.example.ui.theme.JapanRedDark
+import com.example.ui.theme.JapanRedLight
+import com.example.ui.theme.LightBg
+import com.example.ui.theme.Slate400
+import com.example.ui.theme.Slate500
+import com.example.ui.theme.Slate700
+import com.example.ui.theme.Slate900
+import kotlinx.coroutines.launch
+
+data class LevelInfo(
+    val level: String,
+    val nameBengali: String,
+    val description: String,
+    val isAvailable: Boolean,
+    val wordCountText: String
+)
+
+@Composable
+fun HomeScreen(
+    onNavigate: (AppScreen) -> Unit,
+    snackbarHostState: SnackbarHostState,
+    modifier: Modifier = Modifier
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
+
+    val levels = listOf(
+        LevelInfo("N5", "প্রাথমিক জাপানি", "দৈনন্দিন সাধারণ ভাববিনিময় ও প্রাথমিক ব্যাকরণ", true, "৫০টি শব্দ অন্তর্ভুক্ত"),
+        LevelInfo("N4", "সহজ জাপানি", "মৌলিক দৈনন্দিন আলোচনা ও বাক্য গঠন", false, "শীঘ্রই আসছে"),
+        LevelInfo("N3", "মধ্যবর্তী জাপানি", "দৈনন্দিন বিষয়ের সুনির্দিষ্ট বোধগম্যতা", false, "শীঘ্রই আসছে"),
+        LevelInfo("N2", "উচ্চ মধ্যবর্তী", "সংবাদ, প্রবন্ধ ও স্বাভাবিক গতিতে কথপোকথন", false, "শীঘ্রই আসছে"),
+        LevelInfo("N1", "উন্নত জাপানি", "জটিল দর্শন, পেশাদার ও গভীর সাহিত্যিক ভাষা", false, "শীঘ্রই আসছে")
+    )
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(LightBg)
+            .verticalScroll(scrollState)
+            .padding(horizontal = 20.dp, vertical = 16.dp)
+            .testTag("home_screen"),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // App Hero Badge / Branding
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = JapanRedLight,
+            border = androidx.compose.foundation.BorderStroke(1.dp, JapanRedBorder),
+            modifier = Modifier.padding(bottom = 12.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(JapanRed)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "日本বাংলা • Japanese for Bangla",
+                    color = JapanRedDark,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        // App Title in Bengali
+        Text(
+            text = "জাপানি শিখি বাংলায়",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = Slate900,
+            lineHeight = 36.sp,
+            modifier = Modifier.testTag("home_app_title")
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        // Subtitle
+        Text(
+            text = "N5 থেকে N1 — বাংলায় সহজে জাপানি শিখুন",
+            fontSize = 15.sp,
+            color = Slate500,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.testTag("home_app_subtitle")
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Quick Action Banners
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Card(
+                onClick = { onNavigate(AppScreen.VOCABULARY) },
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = CardBg),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .border(1.dp, BorderSubtle, RoundedCornerShape(16.dp))
+                    .testTag("quick_action_vocab")
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .background(JapanRedLight),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.MenuBook,
+                            contentDescription = "শব্দভাণ্ডার",
+                            tint = JapanRed,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = "শব্দভাণ্ডার",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Slate900
+                    )
+                    Text(
+                        text = "৫০টি শব্দ পড়ুন",
+                        fontSize = 12.sp,
+                        color = Slate500
+                    )
+                }
+            }
+
+            Card(
+                onClick = { onNavigate(AppScreen.FLASHCARD) },
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = CardBg),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .border(1.dp, BorderSubtle, RoundedCornerShape(16.dp))
+                    .testTag("quick_action_flashcard")
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .background(Amber50),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Style,
+                            contentDescription = "ফ্ল্যাশকার্ড",
+                            tint = Amber600,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = "ফ্ল্যাশকার্ড",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Slate900
+                    )
+                    Text(
+                        text = "সহজে মুখস্থ করুন",
+                        fontSize = 12.sp,
+                        color = Slate500
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(28.dp))
+
+        // Level Selection Header
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "JLPT লেভেল নির্বাচন করুন",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Slate900
+            )
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = Emerald50
+            ) {
+                Text(
+                    text = "N5 আনলক করা",
+                    color = Emerald600,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // 5 Big Buttons: N5, N4, N3, N2, N1
+        levels.forEach { levelInfo ->
+            LevelCardItem(
+                levelInfo = levelInfo,
+                onClick = {
+                    if (levelInfo.isAvailable) {
+                        onNavigate(AppScreen.VOCABULARY)
+                    } else {
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = "${levelInfo.level} স্তরটি শীঘ্রই আসছে! বর্তমানে N5 শব্দভাণ্ডার অনুশীলন করুন।"
+                            )
+                        }
+                    }
+                }
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+fun LevelCardItem(
+    levelInfo: LevelInfo,
+    onClick: () -> Unit
+) {
+    val isN5 = levelInfo.isAvailable
+
+    Card(
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isN5) CardBg else Color(0xFFF1F5F9)
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isN5) 3.dp else 0.dp
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                width = if (isN5) 1.5.dp else 1.dp,
+                color = if (isN5) JapanRedBorder else BorderSubtle,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .testTag("level_button_${levelInfo.level.lowercase()}")
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                // Level Badge Box
+                Box(
+                    modifier = Modifier
+                        .size(52.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (isN5) {
+                                Brush.linearGradient(
+                                    colors = listOf(JapanRed, JapanRedDark)
+                                )
+                            } else {
+                                Brush.linearGradient(
+                                    colors = listOf(Color(0xFFCBD5E1), Color(0xFF94A3B8))
+                                )
+                            }
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = levelInfo.level,
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = levelInfo.nameBengali,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isN5) Slate900 else Slate700
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        if (!isN5) {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Amber50,
+                                border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFFFDE68A))
+                            ) {
+                                Text(
+                                    text = "শীঘ্রই আসছে",
+                                    color = Amber600,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    Text(
+                        text = if (isN5) levelInfo.wordCountText else levelInfo.description,
+                        fontSize = 13.sp,
+                        color = if (isN5) JapanRed else Slate500,
+                        fontWeight = if (isN5) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                }
+            }
+
+            if (isN5) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(JapanRedLight),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "প্রবেশ করুন",
+                        tint = JapanRed,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            } else {
+                Icon(
+                    imageVector = Icons.Filled.Lock,
+                    contentDescription = "শীঘ্রই আসছে",
+                    tint = Slate400,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+    }
+}
