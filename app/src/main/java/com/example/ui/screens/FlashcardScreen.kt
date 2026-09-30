@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import android.widget.Toast
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -55,6 +56,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -85,6 +87,7 @@ fun FlashcardScreen(
     onReportError: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     var words by remember { mutableStateOf(VocabularyRepository.n5Words) }
     var currentIndex by remember { mutableIntStateOf(0) }
     var isFlipped by remember { mutableStateOf(false) }
@@ -274,11 +277,11 @@ fun FlashcardScreen(
                             showEnglishMeaning = showEnglishMeaning,
                             onSpeak = { onSpeakJapanese(currentWord.japanese) },
                             onPracticeWord = {
-                                practiceTarget = Triple(currentWord.japanese, currentWord.furigana, currentWord.bengali)
+                                Toast.makeText(context, "ভয়েস প্র্যাকটিস শীঘ্রই আসছে!", Toast.LENGTH_SHORT).show()
                             },
                             onSpeakExample = { onSpeakJapanese(currentWord.exampleJapanese) },
                             onPracticeExample = {
-                                practiceTarget = Triple(currentWord.exampleJapanese, currentWord.exampleReading, currentWord.exampleBengali)
+                                Toast.makeText(context, "ভয়েস প্র্যাকটিস শীঘ্রই আসছে!", Toast.LENGTH_SHORT).show()
                             },
                             onReportError = onReportError
                         )

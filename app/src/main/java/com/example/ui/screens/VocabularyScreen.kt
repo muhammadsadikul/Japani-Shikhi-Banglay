@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -44,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -76,6 +78,7 @@ fun VocabularyScreen(
     onReportError: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("সব") }
 
@@ -250,10 +253,10 @@ fun VocabularyScreen(
                         onSpeak = { onSpeakJapanese(word.japanese) },
                         onSpeakExample = { onSpeakJapanese(word.exampleJapanese) },
                         onPracticeWord = {
-                            practiceTarget = Triple(word.japanese, word.furigana, word.bengali)
+                            Toast.makeText(context, "ভয়েস প্র্যাকটিস শীঘ্রই আসছে!", Toast.LENGTH_SHORT).show()
                         },
                         onPracticeExample = {
-                            practiceTarget = Triple(word.exampleJapanese, word.exampleReading, word.exampleBengali)
+                            Toast.makeText(context, "ভয়েস প্র্যাকটিস শীঘ্রই আসছে!", Toast.LENGTH_SHORT).show()
                         },
                         onReportError = onReportError
                     )

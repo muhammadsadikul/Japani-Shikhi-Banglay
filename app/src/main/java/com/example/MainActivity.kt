@@ -1,6 +1,7 @@
 package com.example
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -25,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import com.example.data.SettingsManager
 import com.example.ui.components.AppBottomNavBar
 import com.example.ui.components.AppScreen
@@ -83,6 +85,7 @@ fun MainAppHost(
     onSpeakJapanese: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     var isSplashVisible by remember { mutableStateOf(true) }
     val hasSelectedLanguage by settingsManager.hasSelectedLanguage.collectAsState()
 
@@ -94,6 +97,13 @@ fun MainAppHost(
         LanguageSelectionScreen(
             onLanguageSelected = { selectedLang ->
                 settingsManager.setAppLanguage(selectedLang)
+                if (selectedLang != "bn") {
+                    Toast.makeText(
+                        context,
+                        "Translation for this language is coming soon! UI will remain in Bengali for now.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             },
             modifier = modifier
         )

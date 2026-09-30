@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -50,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -79,6 +81,7 @@ fun SettingsScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
     val isDarkMode by settingsManager.isDarkMode.collectAsState()
     val showEnglishMeaning by settingsManager.showEnglishMeaning.collectAsState()
@@ -93,9 +96,18 @@ fun SettingsScreen(
             onLanguageSelected = { newLang ->
                 settingsManager.setAppLanguage(newLang)
                 showLanguageSelector = false
-                coroutineScope.launch {
-                    val langObj = LanguageRepository.getLanguageByCode(newLang)
-                    snackbarHostState.showSnackbar("ভাষা পরিবর্তিত: ${langObj.displayName}")
+                if (newLang != "bn") {
+                    val comingSoonNotice = "Translation for this language is coming soon! UI will remain in Bengali for now."
+                    Toast.makeText(context, comingSoonNotice, Toast.LENGTH_LONG).show()
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(comingSoonNotice)
+                    }
+                } else {
+                    val bnNotice = "ভাষা বাংলায় সেট করা হয়েছে।"
+                    Toast.makeText(context, bnNotice, Toast.LENGTH_SHORT).show()
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(bnNotice)
+                    }
                 }
             },
             onBack = { showLanguageSelector = false },

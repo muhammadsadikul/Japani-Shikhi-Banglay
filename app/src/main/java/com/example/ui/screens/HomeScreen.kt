@@ -75,6 +75,7 @@ import com.example.ui.theme.Slate400
 import com.example.ui.theme.Slate500
 import com.example.ui.theme.Slate700
 import com.example.ui.theme.Slate900
+import com.example.util.BengaliUtils
 import kotlinx.coroutines.launch
 
 data class LevelInfo(
@@ -95,6 +96,9 @@ fun HomeScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+
+    val n5ProgressPercent = 82
+    val n5ProgressFloat = n5ProgressPercent / 100f
 
     val levels = listOf(
         LevelInfo("N5", "প্রাথমিক জাপানি", "দৈনন্দিন সাধারণ ভাববিনিময় ও প্রাথমিক ব্যাকরণ", true, "৫০টি শব্দ + কাঞ্জি ও ব্যাকরণ প্রস্তুত"),
@@ -219,7 +223,7 @@ fun HomeScreen(
                         color = Slate900
                     )
                     Text(
-                        text = "৪২% সম্পন্ন",
+                        text = "${BengaliUtils.toBengaliDigits(n5ProgressPercent)}% সম্পন্ন",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = JapanRed
@@ -230,7 +234,7 @@ fun HomeScreen(
 
                 // Linear Progress bar
                 LinearProgressIndicator(
-                    progress = { 0.42f },
+                    progress = { n5ProgressFloat },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(8.dp)
@@ -241,16 +245,22 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Milestone indicators (25% and 50%)
+                // Dynamic Milestone indicators (25% and 50%)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    // 25% Milestone (Achieved)
+                    val is25Achieved = n5ProgressPercent >= 25
+                    val is50Achieved = n5ProgressPercent >= 50
+
+                    // 25% Milestone
                     Surface(
                         shape = RoundedCornerShape(10.dp),
-                        color = Emerald50,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Emerald600.copy(alpha = 0.3f)),
+                        color = if (is25Achieved) Emerald50 else Amber50,
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            if (is25Achieved) Emerald600.copy(alpha = 0.3f) else Amber600.copy(alpha = 0.3f)
+                        ),
                         modifier = Modifier.weight(1f)
                     ) {
                         Row(
@@ -258,24 +268,37 @@ fun HomeScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.CheckCircle,
+                                imageVector = if (is25Achieved) Icons.Filled.CheckCircle else Icons.Filled.Star,
                                 contentDescription = null,
-                                tint = Emerald600,
+                                tint = if (is25Achieved) Emerald600 else Amber600,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Column {
-                                Text("২৫% মাইলস্টোন", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Emerald600)
-                                Text("অর্জিত ✓", fontSize = 10.sp, color = Emerald600)
+                                Text(
+                                    text = "২৫% মাইলস্টোন",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (is25Achieved) Emerald600 else Amber600
+                                )
+                                Text(
+                                    text = if (is25Achieved) "অর্জিত ✅" else "চলমান...",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = if (is25Achieved) Emerald600 else Amber600
+                                )
                             }
                         }
                     }
 
-                    // 50% Milestone (In Progress)
+                    // 50% Milestone
                     Surface(
                         shape = RoundedCornerShape(10.dp),
-                        color = Amber50,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Amber600.copy(alpha = 0.3f)),
+                        color = if (is50Achieved) Emerald50 else Amber50,
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            if (is50Achieved) Emerald600.copy(alpha = 0.3f) else Amber600.copy(alpha = 0.3f)
+                        ),
                         modifier = Modifier.weight(1f)
                     ) {
                         Row(
@@ -283,15 +306,25 @@ fun HomeScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Star,
+                                imageVector = if (is50Achieved) Icons.Filled.CheckCircle else Icons.Filled.Star,
                                 contentDescription = null,
-                                tint = Amber600,
+                                tint = if (is50Achieved) Emerald600 else Amber600,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Column {
-                                Text("৫০% মাইলস্টোন", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Amber600)
-                                Text("চলমান...", fontSize = 10.sp, color = Amber600)
+                                Text(
+                                    text = "৫০% মাইলস্টোন",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (is50Achieved) Emerald600 else Amber600
+                                )
+                                Text(
+                                    text = if (is50Achieved) "অর্জিত ✅" else "চলমান...",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = if (is50Achieved) Emerald600 else Amber600
+                                )
                             }
                         }
                     }
@@ -425,7 +458,7 @@ fun HomeScreen(
                             color = Emerald50
                         ) {
                             Text(
-                                text = "৪২% সম্পন্ন",
+                                text = "${BengaliUtils.toBengaliDigits(n5ProgressPercent)}% সম্পন্ন",
                                 color = Emerald600,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
