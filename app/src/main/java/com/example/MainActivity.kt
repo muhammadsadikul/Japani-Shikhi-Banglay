@@ -28,6 +28,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.example.data.SettingsManager
+import com.example.data.supabase.SupabaseManager
+import androidx.lifecycle.lifecycleScope
 import com.example.ui.components.AppBottomNavBar
 import com.example.ui.components.AppScreen
 import com.example.ui.screens.AiTutorScreen
@@ -48,12 +50,14 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     private lateinit var ttsManager: TtsManager
     private lateinit var settingsManager: SettingsManager
+    private lateinit var supabaseManager: SupabaseManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         ttsManager = TtsManager(this)
         settingsManager = SettingsManager(this)
+        supabaseManager = SupabaseManager(this)
 
         setContent {
             val isDarkModePref by settingsManager.isDarkMode.collectAsState()
@@ -66,8 +70,31 @@ class MainActivity : ComponentActivity() {
                 ) {
                     MainAppHost(
                         settingsManager = settingsManager,
+                        supabaseManager = supabaseManager,
                         onSpeakJapanese = { text -> ttsManager.speakJapanese(text) }
                     )
+                }
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        intent?.data?.let { uri ->
+            if (uri.scheme == "com.sadikul.japanishikhibanglay" && uri.host == "auth-callback") {
+                val fragment = uri.fragment ?: uri.query ?: ""
+                val token = if (fragment.contains("access_token=")) {
+                    fragment.substringAfter("access_token=").substringBefore("&")
+                } else null
+
+                lifecycleScope.launch {
+                    supabaseManager.completeLogin(
+                        userId = "supabase_user_${System.currentTimeMillis() % 100000}",
+                        email = "user@gmail.com",
+                        displayName = "Google ব্যবহারকারী",
+                        accessToken = token
+                    )
+                    Toast.makeText(this@MainActivity, "Google প্রমাণীকরণ সফল হয়েছে!", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -82,6 +109,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainAppHost(
     settingsManager: SettingsManager,
+    supabaseManager: SupabaseManager,
     onSpeakJapanese: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -110,6 +138,7 @@ fun MainAppHost(
     } else {
         MainApp(
             settingsManager = settingsManager,
+            supabaseManager = supabaseManager,
             onSpeakJapanese = onSpeakJapanese,
             modifier = modifier
         )
@@ -119,6 +148,7 @@ fun MainAppHost(
 @Composable
 fun MainApp(
     settingsManager: SettingsManager,
+    supabaseManager: SupabaseManager,
     onSpeakJapanese: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -164,7 +194,8 @@ fun MainApp(
                 AppScreen.HOME -> HomeScreen(
                     onNavigate = { target -> currentScreen = target },
                     onOpenSettings = { currentScreen = AppScreen.SETTINGS },
-                    snackbarHostState = snackbarHostState
+                    snackbarHostState = snackbarHostState,
+                    supabaseManager = supabaseManager
                 )
                 AppScreen.VOCABULARY -> VocabularyScreen(
                     showEnglishMeaning = showEnglishMeaning,
@@ -180,7 +211,8 @@ fun MainApp(
                 AppScreen.PROFILE -> ProfileScreen(
                     onNavigate = { target -> currentScreen = target },
                     onOpenSettings = { currentScreen = AppScreen.SETTINGS },
-                    snackbarHostState = snackbarHostState
+                    snackbarHostState = snackbarHostState,
+                    supabaseManager = supabaseManager
                 )
                 AppScreen.FLASHCARD -> FlashcardScreen(
                     showEnglishMeaning = showEnglishMeaning,

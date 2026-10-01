@@ -1,10 +1,14 @@
 package com.example.ui.screens
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +39,7 @@ import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -56,9 +61,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.AiRepository
 import com.example.ui.components.PandaAvatar
 import com.example.ui.theme.BorderSubtle
 import com.example.ui.theme.CardBg
+import com.example.ui.theme.Emerald600
 import com.example.ui.theme.JapanRed
 import com.example.ui.theme.JapanRedBorder
 import com.example.ui.theme.JapanRedLight
@@ -68,6 +75,9 @@ import com.example.ui.theme.Slate500
 import com.example.ui.theme.Slate700
 import com.example.ui.theme.Slate900
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 data class LessonCardData(
     val word: String,
@@ -84,7 +94,14 @@ data class ChatMessage(
     val text: String,
     val isUser: Boolean,
     val timestamp: String,
+    val isError: Boolean = false,
     val lessonCard: LessonCardData? = null
+)
+
+data class QuickActionItem(
+    val label: String,
+    val prompt: String,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector
 )
 
 @Composable
@@ -96,13 +113,16 @@ fun AiTutorScreen(
     val listState = rememberLazyListState()
 
     var inputText by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
-    // User requested welcome message and placeholder Lesson Card structure
+    val timeFormatter = remember { SimpleDateFormat("h:mm a", Locale.getDefault()) }
+
+    // Initial welcome message with interactive Lesson Card
     val messages = remember {
         mutableStateListOf(
             ChatMessage(
                 id = "1",
-                text = "কোননিচিওয়া! আমি তোমার জাপানি AI শিক্ষক। আমি এখনো শেখার মোডে আছি, শীঘ্রই আমি সম্পূর্ণভাবে তোমার সাথে কথা বলতে পারব! 🌸",
+                text = "কোননিচিওয়া! আমি তোমার জাপানি AI শিক্ষক 🌸 আমি সরাসরি ক্লাউড এআই এর সাথে যুক্ত। আমাকে যেকোনো জাপানি শব্দ, ব্যাকরণ বা বাক্য সম্পর্কে প্রশ্ন করো!",
                 isUser = false,
                 timestamp = "এখন",
                 lessonCard = LessonCardData(
@@ -118,26 +138,72 @@ fun AiTutorScreen(
         )
     }
 
+    // Quick action prompt mappings
     val quickActions = listOf(
-        Pair("শব্দ শেখাও", Icons.Filled.MenuBook),
-        Pair("গ্রামার বুঝিয়ে দাও", Icons.Filled.School),
-        Pair("কুইজ নাও", Icons.Filled.Quiz),
-        Pair("উচ্চারণ শেখাও", Icons.Filled.Hearing)
+        QuickActionItem(
+            label = "শব্দ শেখাও",
+            prompt = "আমাকে একটা নতুন N5 জাপানি শব্দ শেখাও",
+            icon = Icons.Filled.MenuBook
+        ),
+        QuickActionItem(
+            label = "গ্রামার বুঝিয়ে দাও",
+            prompt = "একটা N5 গ্রামার পয়েন্ট সহজ বাংলায় বুঝিয়ে দাও",
+            icon = Icons.Filled.School
+        ),
+        QuickActionItem(
+            label = "কুইজ নাও",
+            prompt = "আমাকে একটা N5 শব্দের কুইজ দাও",
+            icon = Icons.Filled.Quiz
+        ),
+        QuickActionItem(
+            label = "উচ্চারণ শেখাও",
+            prompt = "একটা জাপানি শব্দের উচ্চারণ শেখাও",
+            icon = Icons.Filled.Hearing
+        )
     )
 
-    fun handleSend(text: String) {
-        if (text.isBlank()) return
+    fun handleSend(textToSend: String) {
+        val trimmed = textToSend.trim()
+        if (trimmed.isBlank() || isLoading) return
+
+        val userMessageTime = timeFormatter.format(Date())
         val userMsg = ChatMessage(
             id = System.currentTimeMillis().toString(),
-            text = text,
+            text = trimmed,
             isUser = true,
-            timestamp = "এখন"
+            timestamp = userMessageTime
         )
         messages.add(userMsg)
         inputText = ""
+        isLoading = true
 
         coroutineScope.launch {
-            listState.animateScrollToItem(messages.size - 1)
+            // Scroll to the user message
+            listState.animateScrollToItem(messages.size)
+
+            try {
+                val reply = AiRepository.sendMessage(message = trimmed, level = "N5")
+                val aiMsg = ChatMessage(
+                    id = (System.currentTimeMillis() + 1).toString(),
+                    text = reply,
+                    isUser = false,
+                    timestamp = timeFormatter.format(Date()),
+                    isError = false
+                )
+                messages.add(aiMsg)
+            } catch (e: Exception) {
+                val errorMsg = ChatMessage(
+                    id = (System.currentTimeMillis() + 1).toString(),
+                    text = "⚠️ ${e.message ?: "সার্ভার থেকে উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।"}",
+                    isUser = false,
+                    timestamp = timeFormatter.format(Date()),
+                    isError = true
+                )
+                messages.add(errorMsg)
+            } finally {
+                isLoading = false
+                listState.animateScrollToItem(messages.size - 1)
+            }
         }
     }
 
@@ -157,12 +223,12 @@ fun AiTutorScreen(
         ) {
             Box {
                 PandaAvatar(size = 46.dp)
-                // Mode indicator badge (Amber/learning mode)
+                // Online indicator badge (Emerald green)
                 Box(
                     modifier = Modifier
                         .size(12.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFF59E0B))
+                        .background(Color(0xFF10B981))
                         .border(2.dp, CardBg, CircleShape)
                         .align(Alignment.BottomEnd)
                 )
@@ -187,14 +253,15 @@ fun AiTutorScreen(
                     )
                 }
                 Text(
-                    text = "শেখার মোডে আছে 🌸 (শিঘ্রই লাইভ চ্যাট যুক্ত হবে)",
+                    text = if (isLoading) "AI চিন্তা করছে..." else "অনলাইন 🟢 • Cloudflare AI সক্রিয়",
                     fontSize = 12.sp,
-                    color = Slate500
+                    color = if (isLoading) JapanRed else Emerald600,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }
 
-        // Informational Training Notice
+        // Informational Notice Banner
         Surface(
             shape = RoundedCornerShape(0.dp),
             color = JapanRedLight,
@@ -212,7 +279,7 @@ fun AiTutorScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Gemini AI শিক্ষক মডেল তৈরি হচ্ছে। নিচে ইন্টারফেসটির ডিজাইন ও লেসন কার্ড দেখতে পারেন।",
+                    text = "লাইভ AI টিউটর সংযুক্ত। যেকোনো জাপানি শব্দ বা ব্যাকরণ প্রশ্ন করুন।",
                     fontSize = 11.sp,
                     color = JapanRed,
                     fontWeight = FontWeight.Medium,
@@ -237,9 +304,16 @@ fun AiTutorScreen(
                     onSpeakJapanese = onSpeakJapanese
                 )
             }
+
+            // Animated Typing Indicator when AI is thinking
+            if (isLoading) {
+                item(key = "typing_indicator_item") {
+                    TypingIndicatorBubble()
+                }
+            }
         }
 
-        // Quick Action Buttons (Horizontally scrollable LazyRow)
+        // Quick Action Buttons (Horizontally scrollable LazyRow with prompt mappings)
         LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
@@ -248,31 +322,36 @@ fun AiTutorScreen(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            items(quickActions) { (label, icon) ->
+            items(quickActions, key = { it.label }) { action ->
                 Surface(
                     shape = RoundedCornerShape(20.dp),
-                    color = JapanRedLight,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, JapanRedBorder),
+                    color = if (isLoading) Color(0xFFF1F5F9) else JapanRedLight,
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        if (isLoading) BorderSubtle else JapanRedBorder
+                    ),
                     modifier = Modifier
                         .clip(RoundedCornerShape(20.dp))
-                        .clickable { handleSend(label) }
+                        .clickable(enabled = !isLoading) {
+                            handleSend(action.prompt)
+                        }
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = icon,
+                            imageVector = action.icon,
                             contentDescription = null,
-                            tint = JapanRed,
+                            tint = if (isLoading) Slate400 else JapanRed,
                             modifier = Modifier.size(15.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = label,
+                            text = action.label,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = JapanRed
+                            color = if (isLoading) Slate500 else JapanRed
                         )
                     }
                 }
@@ -301,6 +380,7 @@ fun AiTutorScreen(
                     .weight(1f)
                     .testTag("ai_chat_input"),
                 shape = RoundedCornerShape(24.dp),
+                enabled = !isLoading,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = JapanRed,
                     unfocusedBorderColor = BorderSubtle,
@@ -316,17 +396,111 @@ fun AiTutorScreen(
 
             IconButton(
                 onClick = { handleSend(inputText) },
+                enabled = inputText.isNotBlank() && !isLoading,
                 modifier = Modifier
                     .size(46.dp)
                     .clip(CircleShape)
-                    .background(JapanRed)
+                    .background(if (inputText.isNotBlank() && !isLoading) JapanRed else Slate400)
                     .testTag("ai_send_button")
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Send,
-                    contentDescription = "পাঠান",
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp)
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Send,
+                        contentDescription = "পাঠান",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TypingIndicatorBubble() {
+    val infiniteTransition = rememberInfiniteTransition(label = "typing_dots_transition")
+    val dot1Alpha by infiniteTransition.animateFloat(
+        initialValue = 0.25f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(500, delayMillis = 0, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "dot1"
+    )
+    val dot2Alpha by infiniteTransition.animateFloat(
+        initialValue = 0.25f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(500, delayMillis = 180, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "dot2"
+    )
+    val dot3Alpha by infiniteTransition.animateFloat(
+        initialValue = 0.25f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(500, delayMillis = 360, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "dot3"
+    )
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.Bottom
+    ) {
+        PandaAvatar(size = 32.dp)
+        Spacer(modifier = Modifier.width(6.dp))
+
+        Surface(
+            shape = RoundedCornerShape(
+                topStart = 16.dp,
+                topEnd = 16.dp,
+                bottomStart = 4.dp,
+                bottomEnd = 16.dp
+            ),
+            color = CardBg,
+            border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle),
+            shadowElevation = 1.dp
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "AI লিখছে",
+                    fontSize = 12.sp,
+                    color = Slate500,
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(JapanRed.copy(alpha = dot1Alpha))
+                )
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(JapanRed.copy(alpha = dot2Alpha))
+                )
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(JapanRed.copy(alpha = dot3Alpha))
                 )
             }
         }
@@ -339,6 +513,7 @@ fun ChatBubble(
     onSpeakJapanese: (String) -> Unit
 ) {
     val isUser = message.isUser
+    val isError = message.isError
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -362,8 +537,16 @@ fun ChatBubble(
                     bottomStart = if (isUser) 16.dp else 4.dp,
                     bottomEnd = if (isUser) 4.dp else 16.dp
                 ),
-                color = if (isUser) JapanRed else CardBg,
-                border = if (isUser) null else androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle),
+                color = when {
+                    isUser -> JapanRed
+                    isError -> Color(0xFFFEE2E2) // Light red container on error
+                    else -> CardBg
+                },
+                border = when {
+                    isUser -> null
+                    isError -> androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEF4444))
+                    else -> androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle)
+                },
                 shadowElevation = 1.dp
             ) {
                 Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
@@ -371,11 +554,15 @@ fun ChatBubble(
                         text = message.text,
                         fontSize = 14.sp,
                         lineHeight = 20.sp,
-                        color = if (isUser) Color.White else Slate900,
-                        fontWeight = FontWeight.Normal
+                        color = when {
+                            isUser -> Color.White
+                            isError -> Color(0xFFB91C1C) // Red text on error
+                            else -> Slate900
+                        },
+                        fontWeight = if (isError) FontWeight.Medium else FontWeight.Normal
                     )
 
-                    // Lesson Card inside bubble
+                    // Lesson Card inside bubble (for welcome message)
                     if (message.lessonCard != null) {
                         Spacer(modifier = Modifier.height(10.dp))
                         LessonCardView(
@@ -390,7 +577,7 @@ fun ChatBubble(
             Text(
                 text = message.timestamp,
                 fontSize = 10.sp,
-                color = Slate400,
+                color = if (isError) Color(0xFFEF4444) else Slate400,
                 modifier = Modifier.padding(horizontal = 4.dp)
             )
         }

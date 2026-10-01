@@ -46,6 +46,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,6 +78,7 @@ import com.example.ui.theme.Slate500
 import com.example.ui.theme.Slate700
 import com.example.ui.theme.Slate900
 import com.example.util.BengaliUtils
+import com.example.data.supabase.SupabaseManager
 import kotlinx.coroutines.launch
 
 data class LevelInfo(
@@ -92,13 +95,17 @@ fun HomeScreen(
     onNavigate: (AppScreen) -> Unit,
     onOpenSettings: () -> Unit,
     snackbarHostState: SnackbarHostState,
+    supabaseManager: SupabaseManager,
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
-    val n5ProgressPercent = 82
-    val n5ProgressFloat = n5ProgressPercent / 100f
+    val currentSession by supabaseManager.currentSession.collectAsState()
+    val userProgress by supabaseManager.userProgress.collectAsState()
+
+    val n5ProgressPercent = userProgress.n5Progress
+    val n5ProgressFloat = (n5ProgressPercent / 100f).coerceIn(0f, 1f)
 
     val levels = listOf(
         LevelInfo("N5", "প্রাথমিক জাপানি", "দৈনন্দিন সাধারণ ভাববিনিময় ও প্রাথমিক ব্যাকরণ", true, "৫০টি শব্দ + কাঞ্জি ও ব্যাকরণ প্রস্তুত"),
@@ -216,12 +223,29 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "JLPT N5 অগ্রগতি",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Slate900
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "JLPT N5 অগ্রগতি",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Slate900
+                        )
+                        if (currentSession != null) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Emerald50
+                            ) {
+                                Text(
+                                    text = "ক্লাউড ☁️",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Emerald600,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
                     Text(
                         text = "${BengaliUtils.toBengaliDigits(n5ProgressPercent)}% সম্পন্ন",
                         fontSize = 14.sp,
